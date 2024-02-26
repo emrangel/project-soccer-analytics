@@ -18,11 +18,11 @@ library(tibble)
 
 # data ----------------------
 
-df_leagues = data.table::fread("all_leagues.csv")
+df_leagues = data.table::fread("R/all_leagues.csv")
 
 # 01 Process ----------------
 
-# path url 
+# path url
 # url_matches_league_season_col = 'https://www.fotmob.com/api/leagues?id=274&season=2023+-+Clausura' # url especific league and season
 # tt = 'https://www.fotmob.com/api/matchDetails?matchId=4371000' # url especific league and season
 # tt = 'https://www.fotmob.com/es/match/4371000/' # url especific league and season
@@ -62,10 +62,10 @@ matches_today <- fromJSON(json_matches_today)
 
 length(matches_today)
 
-leagues_matches_today = matches_today$leagues %>% 
+leagues_matches_today = matches_today$leagues %>%
   as.data.frame() %>%
   # select(ccode, primaryId,id, name, , parentLeagueName) %>%
-  janitor::clean_names() %>% 
+  janitor::clean_names() %>%
   distinct()
 
 # data.table::fwrite(leagues_matches_today,"flexdashboard/fotmob/out/fotmob_id_leagues.csv")
@@ -108,9 +108,9 @@ no_gol_team2 <- df_tiros %>% filter(eventType != 'Goal' & home_away == 2)
 # Crear el gráfico
 blank_pitch <- create_Pitch(
   goaltype = "box",
-  grass_colour = "#202020", 
-  line_colour = "#797876", 
-  background_colour = "#202020", 
+  grass_colour = "#202020",
+  line_colour = "#797876",
+  background_colour = "#202020",
   goal_colour = "#131313",
 )
 
@@ -123,18 +123,18 @@ blank_pitch <- create_Pitch(
 # )
 
 # Dibujar el gráfico de puntos
-blank_pitch + 
+blank_pitch +
   geom_point(data = gol_team1, aes(x = 105 - x , y = 73 - y),shape = "\U26BD",size = 4, color = "#94c7c3") +
   geom_point(data = no_gol_team1, aes(x = 105 - x , y = 73 - y), color = "#eb9293", alpha = 0.6) +
   geom_point(data = gol_team2, aes(x = x + 15, y = y + 8),shape = "\U26BD",size = 4,  color = "#94c7c3") +
   geom_point(data = no_gol_team2, aes(x = x + 15, y = y + 8), color = "#eb9293", alpha = 0.6) +
-  cowplot::draw_image(logo_team2$imageUrl, 
+  cowplot::draw_image(logo_team2$imageUrl,
                 x = 110, y = 1, width = 7.5, height = 7.5) +
-  cowplot::draw_image(logo_team1$imageUrl, 
+  cowplot::draw_image(logo_team1$imageUrl,
                       x = 105- 100, y = 1, width = 7.5, height = 7.5) +
-  cowplot::draw_image(hight, 
+  cowplot::draw_image(hight,
                       x = 40, y = -10, width = 40, height = 50)
-  
+
 
 
 
@@ -159,32 +159,32 @@ dd_final <- data.frame()  # Inicializar un dataframe vacío
 # for (i in max(seq_along(stats_match$content$stats$Periods$All$stats$stats))) {
 for (i in seq_along(stats_match$content$stats$Periods$All$stats$stats)) {
   dd <- stats_match$content$stats$Periods$All$stats$stats[[i]]
-  
+
   dd <- bind_rows(dd %>% mutate(name_team = "home"),
                   dd %>% mutate(name_team = "away"))
-  
-  dd <- dd %>% 
+
+  dd <- dd %>%
     mutate(home = lapply(stats, function(x) x[1] %>% unlist),
            away = lapply(stats, function(x) x[2] %>% unlist)) %>%
     mutate(stats = ifelse(name_team == "home", home, away))
-  
+
   dd <- left_join(dd, teams, by = c("name_team" = "name_team")) %>%
     select(title, key, stats, name)
-  
+
   dd_final <- bind_rows(dd_final, dd)
 }
 
-dd_final = dd_final %>% 
+dd_final = dd_final %>%
   mutate(porcentaje = str_extract(stats, "\\d+(?=%)"),
        porcentaje = as.numeric(porcentaje) / 100) %>%
-  mutate(stats = ifelse(!is.na(porcentaje), porcentaje, stats)) %>% 
-  filter(stats != "NA") %>% 
+  mutate(stats = ifelse(!is.na(porcentaje), porcentaje, stats)) %>%
+  filter(stats != "NA") %>%
   mutate(stats = as.numeric(stats)) %>%
-  select(-porcentaje) %>% 
-  filter(stats !=0) %>% 
+  select(-porcentaje) %>%
+  filter(stats !=0) %>%
   distinct()
 
-# Grapgh -------------------------------------------------------------------------------------------
+### Grapgh -------------------------------------------------------------------------------------------
 
 # Calcular el porcentaje para cada categoría de "key"
 
@@ -211,14 +211,14 @@ p <- ggplot(df_normalized, aes(x = key, y = normalized_stats, fill = name)) +
     legend.position = "top"  # Posición de la leyenda
   ) +
   scale_fill_manual(values = my_colors) +  # Usar la paleta de colores personalizada
-  coord_flip()+ 
+  coord_flip()+
   guides(fill = guide_legend(reverse = TRUE))
 
-p 
+p
 ggsave("high_quality_plot.png", plot = p, width = 7, height = 7, dpi = 300)
 
 
-# Stats for player --------------------------------------------------------------------------------
+### Stats for player --------------------------------------------------------------------------------
 
 # dd <- data.frame(total = c("tiros", 20, "Pases", 10, "saltos", 3))
 
@@ -235,14 +235,14 @@ dd = stats_match[["content"]][["lineup"]][["lineup"]][["optaLineup"]][["players"
   rename("valor" = ".") %>%
   mutate(porcentaje = str_extract(valor, "\\d+(?=%)"),
          porcentaje = as.numeric(porcentaje) / 100) %>%
-  mutate(valor = ifelse(!is.na(porcentaje), porcentaje, valor)) %>% 
-  filter(!is.na(valor)) %>% 
-  mutate(indice = str_remove_all(indice,".value.*")) %>% 
+  mutate(valor = ifelse(!is.na(porcentaje), porcentaje, valor)) %>%
+  filter(!is.na(valor)) %>%
+  mutate(indice = str_remove_all(indice,".value.*")) %>%
   select(-porcentaje)
 
 player = stats_match[["content"]][["lineup"]][["lineup"]][["optaLineup"]][["players"]][[1]][[1]][["name"]]
 
-dd = dd %>% 
+dd = dd %>%
   mutate(player =paste0(player$fullName))
 
 rm(list = ls(all = T))
@@ -260,19 +260,19 @@ resultados <- data.frame()
 
 
 for (i in seq_along(stats_match[["content"]][["lineup"]][["lineup"]][["optaLineup"]][["players"]])) {
-  
+
   lista <- stats_match[["content"]][["lineup"]][["lineup"]][["optaLineup"]][["players"]][[i]]
-  
+
   longitud <- length(lista)
-  
+
   for (j in seq_len(longitud)) {
-    
-    dd <- lista[[j]][['stats']][[1]][["stats"]] %>% 
-      unlist() %>% 
-      as.data.frame() %>% 
-      rownames_to_column(var = "indice") %>% 
-      filter(str_detect(indice, "value")) %>% 
-      rename("valor" = ".") %>% 
+
+    dd <- lista[[j]][['stats']][[1]][["stats"]] %>%
+      unlist() %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "indice") %>%
+      filter(str_detect(indice, "value")) %>%
+      rename("valor" = ".") %>%
       mutate(
         porcentaje = str_extract(valor, "\\d+(?=&)")
       )
@@ -282,10 +282,10 @@ for (i in seq_along(stats_match[["content"]][["lineup"]][["lineup"]][["optaLineu
 for (i in seq_along(stats_match$content$lineup$lineup$optaLineup$players)) {
   # Acceder a la lista correspondiente
   lista <- stats_match$content$lineup$lineup$optaLineup$players[[i]]
-  
+
   # Acceder a la longitud de la lista
   longitud <- length(lista)
-  
+
   # Iterar sobre la longitud de la lista
   for (j in seq_len(longitud)) {
     # dd[[1]][[1]][["stats"]][[1]][["stats"]]
@@ -303,17 +303,17 @@ for (i in seq_along(stats_match$content$lineup$lineup$optaLineup$players)) {
       filter(!is.na(valor)) %>%
       mutate(indice = str_remove_all(indice, ".value.*")) %>%
       select(-porcentaje)
-    
+
     # Obtener la longitud de la lista de nombres de jugadores
     length_players <- length(lista[[j]]$name$fullName)
-    
+
     # Iterar sobre los nombres de los jugadores
     for (k in seq_len(length_players)) {
       player <- lista[[j]]$name$fullName[k]
-      
+
       dd_k <- dd %>%
         mutate(player = player)
-      
+
       # Almacenar los resultados en el dataframe
       resultados <- bind_rows(resultados, dd_k)
     }
@@ -348,7 +348,7 @@ tt2 = data.frame(tt)
 tt2$RowNames <- rownames(tt2)
 
 tt2 = tt2 %>%
-  rename("name" = tt, 
+  rename("name" = tt,
          "id" = RowNames)
 
 # intento rvest  -----------
@@ -359,13 +359,13 @@ url <- "https://www.fotmob.com/matches/real-madrid-vs-almeria/2tvf3g#4205546"
 # Read the HTML content of the webpage
 webpage <- read_html(url)
 
-dd = webpage %>% 
+dd = webpage %>%
   # html_element(xpath = '//*[@id="MatchFactsWrapper"]/div/div[1]/div[3]')
   html_element(xpath = '//*[contains(concat( " ", @class, " " ), concat( " ", "eufxr1w1", " " ))]')
 
 print(dd)
 
-webpage %>% 
+webpage %>%
 # html_element(xpath = '//*[@id="MatchFactsWrapper"]/div/div[1]/div[3]/div/div[2]')
 html_element(class = '.eenhk2w0')
 
@@ -378,12 +378,12 @@ player <- html_nodes(webpage, ".e2gkh5u2 , .e2gkh5u0 , .e15xx1rt1") %>% html_tex
 html_nodes(webpage, ".eenhk2w0 , tbody") %>% html_text()
 
 
-player <- html_nodes(webpage, "body") %>% html_text() %>% str_replace_all("[//(//)]", "") 
+player <- html_nodes(webpage, "body") %>% html_text() %>% str_replace_all("[//(//)]", "")
 player = player %>% str_remove(.,".*props")
 str_detect(player, "Player stats")
 str_detect(player, "Top stats")
 
-json = 
+json =
 
 json
 
@@ -399,8 +399,8 @@ session <- polite::bow(url)
 url <- "https://www.fotmob.com/matches/real-madrid-vs-almeria/2tvf3g#4205546"
 session2 <- polite::bow(url)
 
-copa_top_scorers <- polite::scrape(session) %>% 
-  html_nodes(".mw-parser-output > table") %>% 
+copa_top_scorers <- polite::scrape(session) %>%
+  html_nodes(".mw-parser-output > table") %>%
   html_table()
   # html_nodes("body")
 
@@ -408,8 +408,8 @@ copa_top_scorers <- polite::scrape(session) %>%
 url <- "https://www.fotmob.com/matches/real-madrid-vs-almeria/2tvf3g#4205546"
 session2 <- polite::bow(url)
 
-pp = polite::scrape(session2) %>% 
-  html_nodes(".ep8dh390") %>% 
+pp = polite::scrape(session2) %>%
+  html_nodes(".ep8dh390") %>%
   html_text()
 
 
