@@ -1,0 +1,4 @@
+- source: soccer_qa.qmd
+  quarto-pub:
+    - id: 281012a7-98f3-4a31-8233-4cf28eb7f327
+      url: 'https://emrangel.quarto.pub/soccer-qa'

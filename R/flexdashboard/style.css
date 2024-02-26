@@ -1,0 +1,14 @@
+.navbar {
+    border: none;
+    font-size: 13px;
+    font-weight: 300;
+    background-color: #0067B1;
+}
+
+
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+  color: #575756;
+    background-color: #FFD000;
+}
