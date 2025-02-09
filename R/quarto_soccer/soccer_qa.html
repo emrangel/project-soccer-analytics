@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>My first Quarto Dashboard</title>
+<title>Quarto (R-Python) - Soccer</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -59,12 +59,12 @@ ul.task-list li input[type="checkbox"] {
     <div class="navbar-brand-container">       
 
       <div class="navbar-title">
-        <div class="navbar-title-text"><a href="#">My first Quarto Dashboard</a></div>
+        <div class="navbar-title-text"><a href="#">Quarto (R-Python) - Soccer</a></div>
         
         
       </div>
     </div>
-<div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-page-1" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#page-1" data-scrolling="false" href="#page-1" aria-controls="page-1" aria-selected="true"><span class="nav-link-text">Page 1</span></a></li><li class="nav-item" role="presentation"><a id="tab-page-2" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#page-2" data-scrolling="false" href="#page-2" aria-controls="page-2" aria-selected="false"><span class="nav-link-text">Page 2</span></a></li></ul></div></div>
+<div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-page-1" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#page-1" data-scrolling="false" href="#page-1" aria-controls="page-1" aria-selected="true"><span class="nav-link-text">Page 1</span></a></li><li class="nav-item" role="presentation"><a id="tab-page-2" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#page-2" data-scrolling="false" href="#page-2" aria-controls="page-2" aria-selected="false"><span class="nav-link-text">Page 2</span></a></li><li class="nav-item" role="presentation"><a id="tab-sesión-r" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#sesión-r" data-scrolling="false" href="#sesión-r" aria-controls="sesión-r" aria-selected="false"><span class="nav-link-text">Sesión R</span></a></li></ul></div></div>
 </nav>
 </header>
 <div class="page-layout-custom quarto-dashboard-content bslib-gap-spacing html-fill-container bslib-page-fill quarto-dashboard-pages">  
@@ -81,7 +81,8 @@ ul.task-list li input[type="checkbox"] {
 <div class="tab-content html-fill-item html-fill-container" data-tabset-id="card-tabset-1"><div class="tab-pane active show html-fill-item html-fill-container" role="tabpanel" id="card-tabset-1-1"><div class="card-body html-fill-item html-fill-container" data-title="Graph with R">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
-<div class="card cell output html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card cell output html-fill-item html-fill-container bslib-card" data-title="0" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title">0</div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
 <img src="soccer_qa_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid quarto-dashboard-img-contain">
@@ -95,30 +96,47 @@ grid-auto-rows: minmax(0, 1fr);">
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-body html-fill-item html-fill-container">
 <pre class="{{r}, class output:}"><code>#| echo: false
-#| class output: 
-#| title: Chart 1
+#| class: output 
 library('rvest')
 library('dplyr')
 library('ggplot2')
 library("ggrepel")
 library("jsonlite")
-library(SBpitch)
+library("SBpitch")
+# install.packages("devtools")
+# devtools::install_github("FCrSTATS/SBpitch")
 
+################
 
-url_stats_match = paste0('https://www.fotmob.com/api/matchDetails?matchId=',4205546) # url especific league and season
-# https://www.fotmob.com/matches/real-madrid-vs-almeria/2tvf3g#4205546
-stats_match &lt;- fromJSON(url_stats_match)
+# Establecer los encabezados
+headers &lt;- httr::add_headers(
+  `User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+  `Accept` = "application/json, text/plain, */*",
+  `Cache-Control` = "public, max-age=300",
+  `X-Client-Version` = "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+  `X-Mas` = "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ=="
+)
 
-shots = stats_match$content$shotmap$shots
-teams = stats_match$header$teams %&gt;% mutate(home_away = c(1,2))
+# Crear la URL con el matchId
+
+matchid &lt;- '4506980'
+url_stats_match = paste0("https://www.fotmob.com/api/matchDetails?matchId=",matchid,"&amp;showNewUefaBracket=true")
+
+# Hacer la solicitud GET con encabezados
+response &lt;- httr::GET(url_stats_match, headers)
+
+# Verificar el código de estado
+print(httr::status_code(response))  # Verifica si devuelve 200
+
+# Obtener el contenido en formato JSON
+stats_match &lt;- httr::content(response, "parsed")
+
+## Crear las metricas para el grafico
+shots = as.data.frame(do.call(rbind, stats_match$content$shotmap$shots))
+teams &lt;- as.data.frame(do.call(rbind, stats_match$header$teams)) %&gt;% mutate(home_away = c(1,2))
 hight = stats_match$content$matchFacts$highlights$image
 
 shots = left_join(shots, teams, by = c("teamId"="id"))
-# shots %&gt;% head(2)
-
-# shots$eventType
-
-# summary(shots %&gt;% select(x,y))
 
 df_tiros = shots
 
@@ -129,6 +147,19 @@ no_gol_team1 &lt;- df_tiros %&gt;% filter(eventType != 'Goal' &amp; home_away ==
 logo_team2 = df_tiros %&gt;% filter(home_away == 2)%&gt;% distinct(imageUrl)
 gol_team2 &lt;- df_tiros %&gt;% filter(eventType == 'Goal' &amp; home_away == 2)
 no_gol_team2 &lt;- df_tiros %&gt;% filter(eventType != 'Goal' &amp; home_away == 2)
+
+
+gol_team1$x &lt;- as.numeric(gol_team1$x)
+gol_team1$y &lt;- as.numeric(gol_team1$y)
+
+no_gol_team1$x &lt;- as.numeric(no_gol_team1$x)
+no_gol_team1$y &lt;- as.numeric(no_gol_team1$y)
+
+gol_team2$x &lt;- as.numeric(gol_team2$x)
+gol_team2$y &lt;- as.numeric(gol_team2$y)
+
+no_gol_team2$x &lt;- as.numeric(no_gol_team2$x)
+no_gol_team2$y &lt;- as.numeric(no_gol_team2$y)
 
 # Crear el gráfico
 blank_pitch &lt;- create_Pitch(
@@ -145,11 +176,11 @@ blank_pitch +
   geom_point(data = no_gol_team1, aes(x = 105 - x , y = y + 8), color = "#eb9293", alpha = 0.6) +
   geom_point(data = gol_team2, aes(x = x + 15, y = y + 8),shape = "\U26BD",size = 4,  color = "#94c7c3") +
   geom_point(data = no_gol_team2, aes(x = x + 15, y = y + 8), color = "#eb9293", alpha = 0.6) +
-  cowplot::draw_image(logo_team2$imageUrl, 
-                x = 110, y = 1, width = 7.5, height = 7.5) +
-  cowplot::draw_image(logo_team1$imageUrl, 
+  cowplot::draw_image(logo_team2$imageUrl %&gt;% unlist(),
+                      x = 110, y = 1, width = 7.5, height = 7.5) +
+  cowplot::draw_image(logo_team1$imageUrl %&gt;% unlist(),
                       x = 105- 100, y = 1, width = 7.5, height = 7.5) +
-  cowplot::draw_image(hight, 
+  cowplot::draw_image(hight,
                       x = 40, y = -10, width = 40, height = 50)</code></pre>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
@@ -176,8 +207,7 @@ grid-auto-rows: minmax(0, 1fr);">
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card html-fill-item html-fill-container bslib-card" data-fill="false" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-body html-fill-item html-fill-container">
 <pre class="{{python}, class output: }"><code>#| echo: false
-
-#| title: Chart 2 
+#| class: output
 
 import requests
 import json
@@ -194,15 +224,25 @@ import PIL
 from mplsoccer import Pitch
 import matplotlib.pyplot as plt
 
-url = "https://www.fotmob.com/api/matchDetails?matchId=4270636"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Cache-Control": "public, max-age=300",
+    "X-Client-Version": "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+    "X-Mas": "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ==",
+}
 
-response = requests.request("GET", url)
+url = "https://www.fotmob.com/api/matchDetails?matchId=4506980&amp;showNewUefaBracket=true"
+
+response = requests.get(url, headers=headers)
+
 json_fotmob = response.json()
 
 #print(response.text)
 
 df_teams = pd.DataFrame(json_fotmob['header']['teams'])
 df_teams['home_way'] = [1,2]
+
 df_tiros = pd.DataFrame(json_fotmob['content']['shotmap']['shots'])
 df_tiros = pd.merge(df_tiros, df_teams, how='left', left_on='teamId', right_on='id')
 
@@ -214,14 +254,14 @@ logo_team2 = df_tiros[df_tiros['home_way'] == 2]['imageUrl'].unique()
 gol_team2 = df_tiros[(df_tiros['eventType'] == 'Goal') &amp; (df_tiros['home_way'] == 2)]
 no_gol_team2 = df_tiros[df_tiros['eventType'] != 'Goal']
 
-fig, ax = plt.subplots(figsize = (14,7))
+fig, ax = plt.subplots(figsize = (30,14))
 pitch = Pitch(pitch_type='custom',pitch_length=105, pitch_width=68)
 pitch.draw(ax=ax)
 
-pitch.scatter(105 - gol_team1.x, 68 - gol_team1.y, ax=ax, marker='football')
-pitch.scatter(105 - no_gol_team1.x, 68 - no_gol_team1.y, ax=ax, alpha = 0.6)
-pitch.scatter(gol_team2.x, gol_team2.y, ax=ax, marker='football')
-pitch.scatter(no_gol_team2.x, no_gol_team2.y, ax=ax, alpha = 0.6)
+fig = pitch.scatter(105 - gol_team1.x, 68 - gol_team1.y, ax=ax, marker='football')
+fig = pitch.scatter(105 - no_gol_team1.x, 68 - no_gol_team1.y, ax=ax, alpha = 0.6)
+fig = pitch.scatter(gol_team2.x, gol_team2.y, ax=ax, marker='football')
+fig = pitch.scatter(no_gol_team2.x, no_gol_team2.y, ax=ax, alpha = 0.6)
 
 #pitch.scatter(gol_team2.x, no_gol_team2.y, ax=ax, alpha=.6)
 
@@ -229,15 +269,21 @@ logo_team1_url = urllib.request.urlretrieve(logo_team1[0], "images/"+ df_teams.i
 logo_team1_url =  df_teams.iloc[0, 0]+".png"
 img = PIL.Image.open("images/" + logo_team1_url)
 # Mostrar el logo del equipo 1 en el gráfico
-ax.imshow(img, extent=[0, 20, 0, 20], alpha=0.5)  
+fig = ax.imshow(img, extent=[0, 20, 0, 20], alpha=0.5)
 
 logo_team2_url = urllib.request.urlretrieve(logo_team2[0], "images/"+ df_teams.iloc[1, 0]+".png")
 logo_team2_url =  df_teams.iloc[1, 0]+".png"
 img2 = PIL.Image.open("images/" + logo_team2_url)
 # Mostrar el logo del equipo 1 en el gráfico
-ax.imshow(img2, extent=[80, 100, 0, 20], alpha=0.5)
+fig = ax.imshow(img2, extent=[80, 100, 0, 20], alpha=0.5)
+plt.show()
 
-plt.show()</code></pre>
+# how deploy 
+
+quarto publish quarto-pub
+Y
+Y
+</code></pre>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
     <template>Expand</template>
@@ -255,7 +301,52 @@ plt.show()</code></pre>
 </div>
 </div>
 <div id="page-2" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-page-2">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: ; grid-auto-columns: minmax(0, 1fr);">
+
+</div>
+<div id="sesión-r" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-sesión-r">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output cell-output-stdout html-fill-item html-fill-container">
+<pre><code>R version 4.2.2 (2022-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 19045)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=Spanish_Colombia.utf8  LC_CTYPE=Spanish_Colombia.utf8   
+[3] LC_MONETARY=Spanish_Colombia.utf8 LC_NUMERIC=C                     
+[5] LC_TIME=Spanish_Colombia.utf8    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] SBpitch_1.0    jsonlite_1.8.4 ggrepel_0.9.2  ggplot2_3.5.1  dplyr_1.1.3   
+[6] rvest_1.0.3   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.10       pillar_1.9.0      compiler_4.2.2    tools_4.2.2      
+ [5] digest_0.6.31     lattice_0.20-45   evaluate_0.19     lifecycle_1.0.4  
+ [9] tibble_3.2.1      gtable_0.3.4      png_0.1-8         pkgconfig_2.0.3  
+[13] rlang_1.1.1       Matrix_1.5-1      cli_3.6.1         rstudioapi_0.15.0
+[17] magick_2.7.4      curl_5.2.0        yaml_2.3.6        xfun_0.36        
+[21] fastmap_1.1.0     withr_3.0.0       httr_1.4.7        stringr_1.5.0    
+[25] xml2_1.3.3        knitr_1.41        generics_0.1.3    vctrs_0.6.4      
+[29] htmlwidgets_1.6.1 rprojroot_2.0.3   cowplot_1.1.1     grid_4.2.2       
+[33] tidyselect_1.2.0  here_1.0.1        reticulate_1.28   glue_1.6.2       
+[37] R6_2.5.1          fansi_1.0.3       rmarkdown_2.19    farver_2.1.1     
+[41] magrittr_2.0.3    scales_1.3.0      htmltools_0.5.4   colorspace_2.0-3 
+[45] labeling_0.4.3    utf8_1.2.2        stringi_1.7.8     munsell_0.5.0    </code></pre>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
 <div id="3ade8a4a-fb1d-4a6c-8409-ac45482d5fc9" class="hidden html-fill-item html-fill-container">
 
 </div>
