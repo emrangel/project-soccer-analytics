@@ -1,13 +1,19 @@
+# Librerías ----
+
 library(ggplot2)
-library(dplyr)
 library(ggimage)
 library(readxl)
 library(gganimate)
+library(dplyr)
 
+.folder_data_input = '/R/Modulo 2/data/input/'
+.folder_data_out = '/R/Modulo 2/data/out/'
+.folder_img = '/R/Modulo 2/imng/'
 
+getwd()
 #Primer intento
 {
-setwd("E:/Compu_Escritorio/Rstudio/CursoFutbol/R Futbol/Modulo 2")
+setwd("C:/Users/Mateo/Desktop/Main/Rstudio/CursoFutbol/R Futbol/Modulo 2")
 Golbet <- read_excel("Ranking equipos.xlsx",2, )
 str((Golbet))
 xgbet <- read_excel("Ranking equipos.xlsx",3)
@@ -89,6 +95,8 @@ help("geom_image")
 ##Betplay 2
 
 
+setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
+
 xgbet <- read_excel("df.xlsx",3)
 xgbetcontra <- read_excel("df.xlsx",4)
 
@@ -155,8 +163,10 @@ Graf
 
 ##Gráfico xG y xGA mean
 {
+  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-  equipos<- read_excel("df2_R.xlsx")
+
+  equipos<- read_excel("df1_R.xlsx")
 
   Teams <- read_excel("Teams.xlsx")
 
@@ -168,9 +178,13 @@ Graf
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
   equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
 
+  equipos <- equipos %>%
+    group_by(badge) %>%
+    summarise(xG=sum(xG),xGA=sum(xGA), Goles=sum(Goles), GolesR=sum(GolesR)) %>%
+    ungroup()
 
   Graf=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
-    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Comparativa xG y xGA") +
+    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria  Jornada 20 xG y xGA") +
     geom_image(aes(image = badge), size = 0.04,) +
     #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
 
@@ -179,13 +193,13 @@ Graf
     geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
     labs(y = "xGA",
          x = "xG",
-         caption = "Fuente: Wyscout  Elaborado por: Erick Rangel")+
+         caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
     theme(legend.position="none") +
-    theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
+    theme(plot.title = element_text(hjust = 0.5, size=24, colour = "white"),
           plot.subtitle = element_text(hjust = 0.5,
-                                       size=10,colour = "white"),
+                                       size=15,colour = "white"),
           plot.caption = element_text(hjust = 0.5,
-                                      size=10,colour = "white"),
+                                      size=15,colour = "white"),
           axis.text.x = element_text( colour="white"),
           axis.text.y = element_text(colour="white"),
           axis.title.x = element_text(colour = "white"),
@@ -200,15 +214,16 @@ Graf
 }
 
 
-ggsave("betR.png", height = 10.5, width = 10.5)
+ggsave("betR.png", height = 14.5, width = 14.5)
 
 #Xga y Goles recibidos Median CAMBIOS
 
 {
+setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-equipos<- read_excel("df2_R.xlsx")
+  equipos<- read_excel("df1R.xlsx")
 
-Teams <- read_excel("Teams.xlsx")
+  Teams <- read_excel("Teams.xlsx")
 
 
 equipos<-equipos %>%
@@ -264,7 +279,7 @@ plot(Graf4)
 
 {setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-  equipos<- read_excel("df2_R.xlsx")
+  equipos<- read_excel("df1_R.xlsx")
 
   Teams <- read_excel("Teams.xlsx")
 
@@ -279,6 +294,11 @@ plot(Graf4)
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
   equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
 
+  equipos <- equipos %>%
+    group_by(badge) %>%
+    summarise(xG=sum(xG),xGA=sum(xGA), Goles=sum(Goles), GolesR=sum(GolesR)) %>%
+    ungroup()
+
 
 
 Graf2=ggplot(equipos, aes(x = xG, y = Goles), col.axis = "red") +
@@ -291,7 +311,7 @@ Graf2=ggplot(equipos, aes(x = xG, y = Goles), col.axis = "red") +
     ##geom_hline(aes(yintercept = mean(GolesR)), color = "red", linetype = "dashed") +
     labs(y = "Goles",
          x = "xG",
-         caption = "Fuente: Wyscout  Elaborado por: Erick Rangel")+
+         caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
     theme(legend.position="none") +
     theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
           plot.subtitle = element_text(hjust = 0.5,
@@ -327,7 +347,7 @@ ggsave("betR2.png", height = 10.5, width = 10.5)
   setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
 
-  equipos<- read_excel("df2_R.xlsx")
+  equipos<- read_excel("df1_R.xlsx")
 
   Teams <- read_excel("Teams.xlsx")
 
@@ -379,31 +399,29 @@ ggsave("betR3.png", height = 10.5, width = 10.5)
 ###ANIMATE SUM BETPLAY
 
 {
-  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-
-  equipos<- read_excel("df2R.xlsx")
+  equipos<- read_excel(paste0(.folder_data_input,"df1R.xlsx"))
 
 
   Teams <- read_excel("Teams.xlsx")
 
-  equipos<-.equipos[1:13]
+equipos<-equipos[1:13]
 
-  equipos<-equipos %>%
+equipos<-equipos %>%
     group_by(Equipo) %>%
     mutate(xGG=cumsum(xG), xGAA=cumsum(xGA))
 
-  equipos<-equipos %>%
-  inner_join(.Teams, by=c("Equipo"="Understat")) %>%
+equipos<-equipos %>%
+  inner_join(Teams, by=c("Equipo"="Understat")) %>%
   mutate(liga="CO_")
 
 
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("img/",equipos$liga,equipos$Code,".png",sep="")
+  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
 
 
   Graf=ggplot(equipos, aes(x = xGG, y = xGAA), col.axis = "red") +
-    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Comparativa xG y xGA") +
+    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria xG y xGA") +
     geom_image(aes(image = badge), size = 0.04,) +
     #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
 
@@ -444,7 +462,7 @@ anim <- Graf +
 anim
 
 animate(anim, nframes =150 ,
-        renderer = gifski_renderer("bet_cuadSum.gif"),
+        renderer = gifski_renderer("bet_ReguSum.gif"),
         heigh=900, width=900)
 
 ##ANIMATE BET JORNADAxJORNADA
@@ -452,18 +470,144 @@ animate(anim, nframes =150 ,
 {
   setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-  equipos<- read_excel("df2R.xlsx")
+  equipos<- read_excel("df1R.xlsx")
 
   Teams <- read_excel("Teams.xlsx")
 
-
-  .equipos<-equipos %>%
-    inner_join(.Teams, by=c("Equipo"="Understat")) %>%
+  equipos<-equipos %>%
+    inner_join(Teams, by=c("Equipo"="Understat")) %>%
     mutate(liga="CO_")
 
 
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("img//",equipos$liga,equipos$Code,".png",sep="")
+  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
+
+
+  bet=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
+    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Jornadas xG y xGA") +
+    geom_image(aes(image = badge), size = 0.04,) +
+    #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+
+
+    geom_vline(aes(xintercept = mean(xGA)), color = "gray", linetype = "dashed") +
+    geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
+    labs(y = "xGA",
+         x = "xG",
+         caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
+    theme(legend.position="none") +
+    theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
+          plot.subtitle = element_text(hjust = 0.5,
+                                       size=10,colour = "white"),
+          plot.caption = element_text(hjust = 0.5,
+                                      size=10,colour = "white"),
+          axis.text.x = element_text( colour="white", size=10),
+          axis.text.y = element_text(colour="white", size=10),
+          axis.title.x = element_text(colour = "white"),
+          axis.title.y = element_text(colour = "white"),
+          panel.background = element_rect("#182849"),
+          plot.background = element_rect(fill = "#182849"),
+          panel.border = element_rect(fill = NA, color = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+
+  plot(bet)
+}
+
+anim <- bet +
+  transition_states(Jornada)+
+  labs(x="xG",
+       y="xGA",
+       title= "Jornada {closest_state} Liga Betplay")+
+  theme(plot.title = element_text(hjust = 0.5, size=20, colour = "white"),
+        plot.subtitle = element_text(hjust = 0.5,
+                                     size=15,colour = "white"),
+        plot.caption = element_text(hjust = 0.5,
+                                    size=15,colour = "white"))
+
+anim
+
+animate(anim, nframes =260 ,
+        renderer = gifski_renderer("bet_RegJor.gif"),
+        heigh=900, width=900)
+
+
+
+#Bet Regular
+
+##Gráfico xG y xGA mean
+{
+  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
+
+
+  equipos<- read_excel("df1R.xlsx")
+
+  Teams <- read_excel("Teams.xlsx")
+
+
+
+
+  equipos<-equipos %>%
+    inner_join(Teams, by=c("Equipo"="Understat")) %>%
+    mutate(liga="CO_")
+
+
+
+  #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
+  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
+
+
+
+  Graf=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
+    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Comparativa xG y xGA") +
+    geom_image(aes(image = badge), size = 0.04) +
+    #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+
+
+    geom_vline(aes(xintercept = mean(xGA)), color = "gray", linetype = "dashed") +
+    geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
+    labs(y = "xGA",
+         x = "xG",
+         caption = "Fuente: Wyscout  Elaborado por: Erick Rangel")+
+    theme(legend.position="none") +
+    theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
+          plot.subtitle = element_text(hjust = 0.5,
+                                       size=10,colour = "white"),
+          plot.caption = element_text(hjust = 0.5,
+                                      size=10,colour = "white"),
+          axis.text.x = element_text( colour="white"),
+          axis.text.y = element_text(colour="white"),
+          axis.title.x = element_text(colour = "white"),
+          axis.title.y = element_text(colour = "white"),
+          panel.background = element_rect("#182849"),
+          plot.background = element_rect(fill = "#182849"),
+          panel.border = element_rect(fill = NA, color = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+
+  plot(Graf)
+}
+
+
+##intento
+
+{
+  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
+
+  equipos<- read_excel("df.xlsx")
+
+  Teams <- read_excel("Teams.xlsx")
+
+
+  equipos<- xgbet %>%
+    inner_join(xgbetcontra, by=c("Equipo"="Equipo"))
+
+  equipos<-equipos %>%
+    inner_join(Teams, by=c("Equipo"="Understat")) %>%
+    mutate(liga="CO_")
+
+
+  #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
+  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
 
 
   bet=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
@@ -508,62 +652,6 @@ anim <- bet +
                                     size=15,colour = "white"))
 
 anim
-
-animate(anim, nframes =150 ,
-        renderer = gifski_renderer("bet_cuadJor.gif"),
-        heigh=900, width=900)
-
-
-
-#Bet Regular
-
-##Gráfico xG y xGA mean
-{
-  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
-
-
-  equipos<- read_excel("df1R.xlsx")
-
-  Teams <- read_excel("Teams.xlsx")
-
-  equipos<-equipos %>%
-    inner_join(Teams, by=c("Equipo"="Understat")) %>%
-    mutate(liga="CO_")
-
-  #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
-
-  Graf=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
-    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Comparativa xG y xGA") +
-    geom_image(aes(image = badge), size = 0.04) +
-    #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
-
-
-    geom_vline(aes(xintercept = mean(xGA)), color = "gray", linetype = "dashed") +
-    geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
-    labs(y = "xGA",
-         x = "xG",
-         caption = "Fuente: Wyscout  Elaborado por: Erick Rangel")+
-    theme(legend.position="none") +
-    theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
-          plot.subtitle = element_text(hjust = 0.5,
-                                       size=10,colour = "white"),
-          plot.caption = element_text(hjust = 0.5,
-                                      size=10,colour = "white"),
-          axis.text.x = element_text( colour="white"),
-          axis.text.y = element_text(colour="white"),
-          axis.title.x = element_text(colour = "white"),
-          axis.title.y = element_text(colour = "white"),
-          panel.background = element_rect("#182849"),
-          plot.background = element_rect(fill = "#182849"),
-          panel.border = element_rect(fill = NA, color = "white"),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
-
-  plot(Graf)
-}
-
-
 
 ##Intento editR
 
