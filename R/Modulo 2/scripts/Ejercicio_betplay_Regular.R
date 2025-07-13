@@ -6,9 +6,9 @@ library(readxl)
 library(gganimate)
 library(dplyr)
 
-.folder_data_input = '/R/Modulo 2/data/input/'
-.folder_data_out = '/R/Modulo 2/data/out/'
-.folder_img = '/R/Modulo 2/imng/'
+.folder_data_input = 'R/Modulo 2/data/input/'
+.folder_data_out = 'R/Modulo 2/data/out/'
+.folder_img = 'R/Modulo 2/img/'
 
 getwd()
 #Primer intento
@@ -400,54 +400,52 @@ ggsave("betR3.png", height = 10.5, width = 10.5)
 
 {
 
-  equipos<- read_excel(paste0(.folder_data_input,"df1R.xlsx"))
+equipos<- read_excel(paste0(.folder_data_input,"df1R.xlsx"))
+Teams <- read_excel(paste0(.folder_data_input,"Teams.xlsx"))
 
+equipos_acomulado <- equipos[1:13]
 
-  Teams <- read_excel("Teams.xlsx")
-
-equipos<-equipos[1:13]
-
-equipos<-equipos %>%
+equipos_acomulado<-equipos_acomulado %>%
     group_by(Equipo) %>%
     mutate(xGG=cumsum(xG), xGAA=cumsum(xGA))
 
-equipos<-equipos %>%
+equipos_acomulado<-equipos_acomulado %>%
   inner_join(Teams, by=c("Equipo"="Understat")) %>%
   mutate(liga="CO_")
 
 
-  #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
+#df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
+equipos_acomulado$badge <- paste(.folder_img,"./",equipos_acomulado$liga,equipos_acomulado$Code,".png",sep="")
 
 
-  Graf=ggplot(equipos, aes(x = xGG, y = xGAA), col.axis = "red") +
-    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria xG y xGA") +
-    geom_image(aes(image = badge), size = 0.04,) +
-    #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+Graf=ggplot(equipos_acomulado, aes(x = xGG, y = xGAA), col.axis = "red") +
+  ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria xG y xGA") +
+  geom_image(aes(image = badge), size = 0.04,) +
+  #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
 
 
-    #geom_vline(aes(xintercept = mean(xGAA)), color = "gray", linetype = "dashed") +
-    #geom_hline(aes(yintercept = mean(xGG)), color = "gray", linetype = "dashed") +
-    labs(y = "xGA",
-         x = "xG",
-         caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
-    theme(legend.position="none") +
-    theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
-          plot.subtitle = element_text(hjust = 0.5,
-                                       size=10,colour = "white"),
-          plot.caption = element_text(hjust = 0.5,
-                                      size=10,colour = "white"),
-          axis.text.x = element_text( colour="white", size=10),
-          axis.text.y = element_text(colour="white",size=10),
-          axis.title.x = element_text(colour = "white"),
-          axis.title.y = element_text(colour = "white"),
-          panel.background = element_rect("#182849"),
-          plot.background = element_rect(fill = "#182849"),
-          panel.border = element_rect(fill = NA, color = "white"),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+  #geom_vline(aes(xintercept = mean(xGAA)), color = "gray", linetype = "dashed") +
+  #geom_hline(aes(yintercept = mean(xGG)), color = "gray", linetype = "dashed") +
+  labs(y = "xGA",
+       x = "xG",
+       caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
+  theme(legend.position="none") +
+  theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
+        plot.subtitle = element_text(hjust = 0.5,
+                                     size=10,colour = "white"),
+        plot.caption = element_text(hjust = 0.5,
+                                    size=10,colour = "white"),
+        axis.text.x = element_text( colour="white", size=10),
+        axis.text.y = element_text(colour="white",size=10),
+        axis.title.x = element_text(colour = "white"),
+        axis.title.y = element_text(colour = "white"),
+        panel.background = element_rect("#182849"),
+        plot.background = element_rect(fill = "#182849"),
+        panel.border = element_rect(fill = NA, color = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
-  plot(Graf)
+plot(Graf)
 }
 
 
@@ -468,22 +466,17 @@ animate(anim, nframes =150 ,
 ##ANIMATE BET JORNADAxJORNADA
 
 {
-  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
 
-  equipos<- read_excel("df1R.xlsx")
-
-  Teams <- read_excel("Teams.xlsx")
-
-  equipos<-equipos %>%
+  equipos_jornada <- equipos %>%
     inner_join(Teams, by=c("Equipo"="Understat")) %>%
     mutate(liga="CO_")
 
 
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
+  equipos_jornada$badge <- paste(.folder_img,"./",equipos_jornada$liga,equipos_jornada$Code,".png",sep="")
 
 
-  bet=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
+  bet=ggplot(equipos_jornada, aes(x = xG, y = xGA), col.axis = "red") +
     ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Jornadas xG y xGA") +
     geom_image(aes(image = badge), size = 0.04,) +
     #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
@@ -536,28 +529,14 @@ animate(anim, nframes =260 ,
 
 ##Gráfico xG y xGA mean
 {
-  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
-
-
-  equipos<- read_excel("df1R.xlsx")
-
-  Teams <- read_excel("Teams.xlsx")
-
-
-
-
-  equipos<-equipos %>%
+  equipos_xg_xa <- equipos %>%
     inner_join(Teams, by=c("Equipo"="Understat")) %>%
     mutate(liga="CO_")
 
-
-
   #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
+  equipos_xg_xa$badge <- paste(.folder_img,"./",equipos_xg_xa$liga,equipos_xg_xa$Code,".png",sep="")
 
-
-
-  Graf=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
+  Graf=ggplot(equipos_xg_xa, aes(x = xG, y = xGA), col.axis = "red") +
     ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Comparativa xG y xGA") +
     geom_image(aes(image = badge), size = 0.04) +
     #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+

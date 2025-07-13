@@ -248,6 +248,13 @@ def metrics_to_image(df_metrics_processed, color_dict, radar_type, date):
     FILE_NAME = f'Stats_{rt}_{team1}_{team2}_{date}_{season}.jpeg'
     PATH = f'../img/{date}/stats_image/'
 
+    # Aumentar espacio visual para texto largo y ajustar fuente
+    styler1.set_properties(subset=columns, **{
+        'white-space': 'normal',   # Permite salto de línea en celdas
+        'width': '200px',          # Controla el ancho mínimo de columna
+        'font-size': '10px'        # Ajusta tamaño de fuente para más contenido
+    })
+
     # Export the styled DataFrame as an image
     dfi.export(styler1, PATH + FILE_NAME, dpi=600, table_conversion='matplotlib')
 
