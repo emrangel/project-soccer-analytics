@@ -2,74 +2,171 @@
 
 library(ggplot2)
 library(ggimage)
+library(ggrepel)
+library(scales)
 library(readxl)
 library(gganimate)
 library(dplyr)
 
-.folder_data_input = 'R/Modulo 2/data/input/'
-.folder_data_out = 'R/Modulo 2/data/out/'
-.folder_img = 'R/Modulo 2/img/'
-.country = 'Colombia'
+.folder_data_input <- 'R/Modulo 2/data/input/'
+# .folder_data_out <- 'R/Modulo 2/data/out/'
+# .folder_data_input <- 'Python/data/input/'
+.folder_data_out <- 'Python/data/output/'
+.folder_img_out <- 'R/Modulo 2/img/output/'
+.folder_img <- 'R/Modulo 2/img/'
+# .ligue <- 'Ecuador. Liga Pro'
+.ligue <- 'Argentina. Primera Nacional'
+.ligue_short <- 'ARG_'
+.country <- 'Argentina_B'
 getwd()
 
-###ANIMATE SUM BETPLAY
+# Data ---
+equipos <- read_excel(paste0(.folder_data_out, .ligue,'.xlsx'))
+
+Teams <- read_excel(paste0(.folder_data_input,"Teams.xlsx"), sheet = .country)
+
+equipos <- equipos %>%
+  filter(fecha > '2025-01-01' & competicion == .ligue & jornada < 20)
+
+equipos$jornada %>% unique()
+
+### Estatic xg vs Xga
 
 {
 
-equipos <- read_excel(paste0(.folder_data_input,"combined_betplay.xlsx"))
-
-equipos <- equipos %>%
-  filter(fecha > '2025-01-01' & competicion == 'Colombia. Liga BetPlay' & jornada < 20)
-
-Teams <- read_excel(paste0(.folder_data_input,"Teams.xlsx"))
-
-equipos_acomulado <- equipos %>% select(1:13,"xg_contra", "jornada")
-
-equipos_acomulado<-equipos_acomulado %>%
-  group_by(equipo) %>%
-  mutate(xGG=cumsum(xg), xGAA=cumsum(xg_contra))
-
-equipos_acomulado<-equipos_acomulado %>%
+equipos_xg_xga <- equipos %>%
   inner_join(Teams, by=c("equipo"="Understat")) %>%
-  mutate(liga="CO_")
+  mutate(liga= .ligue_short)
 
-setdiff(equipos$equipo, equipos_acomulado$equipo)
+setdiff(equipos$equipo, equipos_xg_xga$equipo)
 
-#df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-equipos_acomulado$badge <- paste(.folder_img,.country,"/",equipos_acomulado$liga,equipos_acomulado$Code,".png",sep="")
+equipos_xg_xga$badge <- paste(.folder_img,.country,"/",equipos_xg_xga$liga,equipos_xg_xga$Code,".png",sep="")
 
-Graf=ggplot(equipos_acomulado, aes(x = xGG, y = xGAA), col.axis = "red") +
-  ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Accomulation xG y xGA") +
-  geom_image(aes(image = badge), size = 0.07,) +
-  #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+equipos_xg_xga <- equipos_xg_xga %>%
+  group_by(badge) %>%
+  summarise(xG=sum(xg),xGA=sum(xg_contra), Goles=sum(goles), GolesR=sum(goles_contra)) %>%
+  # summarise(xG=sum(xg),xGA=sum(xg_contra), Goles=sum(goles), GolesR=sum(goles_contra)) %>%
+  ungroup()
+
+x_mean <- mean(equipos_xg_xga$xG)
+y_mean <- mean(equipos_xg_xga$xGA)
+
+Graf <- ggplot(equipos_xg_xga, aes(x = xG, y = xGA)) +
+
+  # Cuadrantes en colores suaves
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#99c1b9", 0.1)) +  # Buen ataque, buena defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#f6bd60", 0.1)) +  # Buen ataque, mala defensa
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = y_mean, ymax = Inf,
+           fill = alpha("#f28482", 0.1)) +  # Mala ataque, buena defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = y_mean, ymax = Inf,
+           fill = alpha("#6a4c93", 0.1)) +  # Mala ataque, mala defensa
+
+  # Logos
+  geom_image(aes(image = badge), size = 0.06, asp = 1.5) +
+
+  # Líneas guías
+  geom_vline(xintercept = x_mean, linetype = "dashed", color = "gray70", linewidth = 0.5) +
+  geom_hline(yintercept = y_mean, linetype = "dashed", color = "gray70", linewidth = 0.5) +
+
+  # Títulos
+  labs(
+    title = "Expected Goals (xG) vs Expected Goals Against (xGA)",
+    subtitle = "Cuadrantes de rendimiento acumulado por equipo",
+    x = "xG (Expected Goals a favor)",
+    y = "xGA (Expected Goals en contra)",
+    caption = "Source: Wyscout  |  by: Erick Rangel"
+  ) +
+
+  # Estética general
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold", colour = "white"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, colour = "white"),
+    plot.caption = element_text(hjust = 0.5, size = 9, colour = "gray80"),
+    axis.title = element_text(colour = "white", size = 12),
+    axis.text = element_text(colour = "gray90", size = 10),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "#1A1A2E"),
+    plot.background = element_rect(fill = "#1A1A2E", color = NA),
+    legend.position = "none"
+  )
+
+plot(Graf)
+
+}
+
+###ANIMATE SUM xg xga
+
+{
+
+equipos_xg_xga <- equipos %>%
+  inner_join(Teams, by=c("equipo"="Understat")) %>%
+  mutate(liga= .ligue_short)
+
+setdiff(equipos$equipo, equipos_xg_xga$equipo)
+
+equipos_xg_xga$badge <- paste(.folder_img,.country,"/",equipos_xg_xga$liga,equipos_xg_xga$Code,".png",sep="")
+
+equipos_xg_xga <- equipos_xg_xga %>%
+  group_by(badge) %>%
+  mutate(xGG=cumsum(xg), xGAA=cumsum(xg_contra)) %>%
+  ungroup()
+
+# Calcula medias para cuadrantes
+x_mean <- mean(equipos_acomulado$xGG)
+y_mean <- mean(equipos_acomulado$xGAA)
 
 
-  #geom_vline(aes(xintercept = mean(xGAA)), color = "gray", linetype = "dashed") +
-  #geom_hline(aes(yintercept = mean(xGG)), color = "gray", linetype = "dashed") +
-  labs(y = "xGA",
-       x = "xG",
-       caption = "Source: Wyscout  By: Erick Rangel")+
-  theme(legend.position="none") +
-  theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
-        plot.subtitle = element_text(hjust = 0.5,
-                                     size=10,colour = "white"),
-        plot.caption = element_text(hjust = 0.5,
-                                    size=10,colour = "white"),
-        axis.text.x = element_text( colour="white", size=10),
-        axis.text.y = element_text(colour="white",size=10),
-        axis.title.x = element_text(colour = "white"),
-        axis.title.y = element_text(colour = "white"),
-        panel.background = element_rect("#182849"),
-        plot.background = element_rect(fill = "#182849"),
-        panel.border = element_rect(fill = NA, color = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+Graf <- ggplot(equipos_xg_xga, aes(x = xGG, y = xGAA)) +
+  # Cuadrantes en colores suaves
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#99c1b9", 0.1)) +  # Buen ataque, buena defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#f6bd60", 0.1)) +  # Buen ataque, mala defensa
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = y_mean, ymax = Inf,
+           fill = alpha("#f28482", 0.1)) +  # Mala ataque, buena defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = y_mean, ymax = Inf,
+           fill = alpha("#6a4c93", 0.1)) +  # Mala ataque, mala defensa
+
+  # Logos
+  geom_image(aes(image = badge), size = 0.06, asp = 1.5) +
+
+  # Líneas guías
+  geom_vline(xintercept = x_mean, linetype = "dashed", color = "gray70", linewidth = 0.5) +
+  geom_hline(yintercept = y_mean, linetype = "dashed", color = "gray70", linewidth = 0.5) +
+
+  # Títulos
+  labs(
+    title = "Expected Goals (xG) vs Expected Goals Against (xGA)",
+    subtitle = "Cuadrantes de rendimiento acumulado por equipo",
+    x = "xG (Expected Goals a favor)",
+    y = "xGA (Expected Goals en contra)",
+    caption = "Source: Wyscout  |  by: Erick Rangel"
+  ) +
+
+  # Estética general
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold", colour = "white"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, colour = "white"),
+    plot.caption = element_text(hjust = 0.5, size = 9, colour = "gray80"),
+    axis.title = element_text(colour = "white", size = 12),
+    axis.text = element_text(colour = "gray90", size = 10),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "#1A1A2E"),
+    plot.background = element_rect(fill = "#1A1A2E", color = NA),
+    legend.position = "none"
+  )
 
 plot(Graf)
 
 anim <- Graf +
   transition_states(jornada)+
-  labs(title= "Jornada {closest_state} Liga Betplay")+
+  labs(title= paste0("Jornada {closest_state} ", .ligue))+
   theme(plot.title = element_text(hjust = 0.5, size=20, colour = "white"),
         plot.subtitle = element_text(hjust = 0.5,
                                      size=15,colour = "white"),
@@ -77,8 +174,8 @@ anim <- Graf +
                                     size=15,colour = "white"))
 anim
 
-animate(anim, nframes =150 ,
-        renderer = gifski_renderer("bet_ReguSum.gif"),
+animate(anim, nframes =250 ,
+        renderer = gifski_renderer(paste0(.folder_img_out,.ligue,"_cumsum.gif")),
         heigh=800, width=750)
 }
 
@@ -89,75 +186,79 @@ animate(anim, nframes =150 ,
 
 equipos_jornada <- equipos %>%
   inner_join(Teams, by=c("equipo"="Understat")) %>%
-    mutate(liga="CO_") %>%
-    filter(fecha > '2025-01-01' & competicion == 'Colombia. Liga BetPlay' & jornada < 20)
+  mutate(liga= .ligue_short)
+# filter(fecha > '2025-01-01' & competicion == 'Colombia. Liga BetPlay' & jornada < 20)
 
 #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
 # equipos_jornada$badge <- paste(.folder_img,"./",equipos_jornada$liga,equipos_jornada$Code,".png",sep="")
 equipos_jornada$badge <- paste(.folder_img,.country,"/",equipos_jornada$liga,equipos_jornada$Code,".png",sep="")
 
-bet=ggplot(equipos_jornada, aes(x = xg, y = xg_contra), col.axis = "red") +
-  ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Jornadas xG y xGA") +
-  geom_image(aes(image = badge), size = 0.07,) +
-  #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+# Cálculo de medias
+x_mean <- mean(equipos_jornada$xg, na.rm = TRUE)
+y_mean <- mean(equipos_jornada$xg_contra, na.rm = TRUE)
 
-  geom_vline(aes(xintercept = mean(xg_contra)), color = "gray", linetype = "dashed") +
-  geom_hline(aes(yintercept = mean(xg)), color = "gray", linetype = "dashed") +
-  labs(y = "xGA",
-       x = "xG",
-       caption = "Source: Wyscout   By: Erick Rangel")+
-  theme(legend.position="none") +
-  theme(plot.title = element_text(hjust = 0.5, size=14, colour = "white"),
-        plot.subtitle = element_text(hjust = 0.5,
-                                     size=10,colour = "white"),
-        plot.caption = element_text(hjust = 0.5,
-                                    size=10,colour = "white"),
-        axis.text.x = element_text( colour="white", size=10),
-        axis.text.y = element_text(colour="white", size=10),
-        axis.title.x = element_text(colour = "white"),
-        axis.title.y = element_text(colour = "white"),
-        panel.background = element_rect("#182849"),
-        plot.background = element_rect(fill = "#182849"),
-        panel.border = element_rect(fill = NA, color = "white"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+bet <- ggplot(equipos_jornada, aes(x = xg, y = xg_contra)) +
 
-plot(bet)
-}
+  # Cuadrantes visuales
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#99c1b9", 0.12)) +  # buenos en ataque y defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = -Inf, ymax = y_mean,
+           fill = alpha("#f6bd60", 0.12)) +  # buen ataque, mala defensa
+  annotate("rect", xmin = -Inf, xmax = x_mean, ymin = y_mean, ymax = Inf,
+           fill = alpha("#f28482", 0.12)) +  # mala ataque, buena defensa
+  annotate("rect", xmin = x_mean, xmax = Inf, ymin = y_mean, ymax = Inf,
+           fill = alpha("#6a4c93", 0.12)) +  # mala ataque y mala defensa
+
+  # Logos
+  geom_image(aes(image = badge), size = 0.065, asp = 1.5) +
+
+  # Líneas de media
+  geom_vline(xintercept = y_mean, color = "gray70", linetype = "dashed", linewidth = 0.5) +
+  geom_hline(yintercept = x_mean, color = "gray70", linetype = "dashed", linewidth = 0.5) +
+
+  # Títulos
+  labs(
+    title = "Análisis de Expected Goals (xG) vs Expected Goals Against (xGA)",
+    subtitle = "Datos por Jornada",
+    x = "xG (Expected Goals)",
+    y = "xGA (Expected Goals Against)",
+    caption = "Fuente: Wyscout  |  Visualización: Erick Rangel"
+  ) +
+
+  # Tema estético profesional
+  theme_minimal(base_family = "Helvetica") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 18, face = "bold", colour = "white"),
+    plot.subtitle = element_text(hjust = 0.5, size = 12, colour = "white"),
+    plot.caption = element_text(hjust = 0.5, size = 10, colour = "gray80"),
+    axis.title.x = element_text(color = "white", size = 12),
+    axis.title.y = element_text(color = "white", size = 12),
+    axis.text = element_text(color = "gray90", size = 10),
+    panel.background = element_rect(fill = "#1A1A2E"),
+    plot.background = element_rect(fill = "#1A1A2E", color = NA),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
+
+# plot(bet)
 
 anim <- bet +
   transition_states(jornada)+
-  labs(x="xG",
-       y="xGA",
-       title= "Jornada {closest_state} Liga Betplay")+
+  labs(title= paste0("Jornada {closest_state} ", .ligue))+
   theme(plot.title = element_text(hjust = 0.5, size=20, colour = "white"),
         plot.subtitle = element_text(hjust = 0.5,
                                      size=15,colour = "white"),
         plot.caption = element_text(hjust = 0.5,
                                     size=15,colour = "white"))
 
-anim
+# anim
 
-animate(anim, nframes =260 ,
-        renderer = gifski_renderer("bet_regular_jornadas.gif"),
+animate(anim, nframes =250 ,
+        renderer = gifski_renderer(paste0(.folder_img_out,.ligue,"_jornada.gif")),
         heigh=800, width=750)
 
-
-sasa
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 #Primer intento
@@ -312,52 +413,47 @@ help("geom_image")
 
 ##Gráfico xG y xGA mean
 {
-  setwd("C:/Users/Mateo/Desktop/Rstudio/ObjetivoA/Curso/Modulo 2")
+
+equipos_xg_xga<-equipos %>%
+  inner_join(Teams, by=c("equipo"="Understat")) %>%
+  mutate(liga= .ligue_short)
 
 
-  equipos<- read_excel("df1_R.xlsx")
+setdiff(equipos$equipo, equipos_xg_xga$equipo)
 
-  Teams <- read_excel("Teams.xlsx")
+equipos_xg_xga$badge <- paste(.folder_img,.country,"/",equipos_xg_xga$liga,equipos_xg_xga$Code,".png",sep="")
 
-  equipos<-equipos %>%
-    inner_join(Teams, by=c("Equipo"="Understat")) %>%
-    mutate(liga="CO_")
+equipos_xg_xga <- equipos_xg_xga %>%
+  group_by(badge) %>%
+  summarise(xG=sum(xg),xGA=sum(xg_contra), Goles=sum(goles), GolesR=sum(goles_contra)) %>%
+  ungroup()
 
-
-  #df$badge <- paste(system.file(package="FootballBadges"),"/Badges/",df$Teams ,".png",sep="")
-  equipos$badge <- paste("./",equipos$liga,equipos$Code,".png",sep="")
-
-  equipos <- equipos %>%
-    group_by(badge) %>%
-    summarise(xG=sum(xG),xGA=sum(xGA), Goles=sum(Goles), GolesR=sum(GolesR)) %>%
-    ungroup()
-
-  Graf=ggplot(equipos, aes(x = xG, y = xGA), col.axis = "red") +
-    ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria  Jornada 20 xG y xGA") +
-    geom_image(aes(image = badge), size = 0.04,) +
-    #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
+Graf=ggplot(equipos_xg_xga, aes(x = xG, y = xGA), col.axis = "red") +
+  ggtitle(label = "Análisis de xG vs xGA" ,subtitle = "Sumatoria  Jornada 20 xG y xGA") +
+  geom_image(aes(image = badge), size = 0.04,) +
+  #geom_abline(intercept = 0, slope = 1, color = "gray", linetype = "dashed")+
 
 
-    geom_vline(aes(xintercept = mean(xGA)), color = "gray", linetype = "dashed") +
-    geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
-    labs(y = "xGA",
-         x = "xG",
-         caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
-    theme(legend.position="none") +
-    theme(plot.title = element_text(hjust = 0.5, size=24, colour = "white"),
-          plot.subtitle = element_text(hjust = 0.5,
-                                       size=15,colour = "white"),
-          plot.caption = element_text(hjust = 0.5,
-                                      size=15,colour = "white"),
-          axis.text.x = element_text( colour="white"),
-          axis.text.y = element_text(colour="white"),
-          axis.title.x = element_text(colour = "white"),
-          axis.title.y = element_text(colour = "white"),
-          panel.background = element_rect("#182849"),
-          plot.background = element_rect(fill = "#182849"),
-          panel.border = element_rect(fill = NA, color = "white"),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
+  geom_vline(aes(xintercept = mean(xGA)), color = "gray", linetype = "dashed") +
+  geom_hline(aes(yintercept = mean(GolesR)), color = "gray", linetype = "dashed") +
+  labs(y = "xGA",
+       x = "xG",
+       caption = "Fuente: Opta  Elaborado por: Erick Rangel")+
+  theme(legend.position="none") +
+  theme(plot.title = element_text(hjust = 0.5, size=24, colour = "white"),
+        plot.subtitle = element_text(hjust = 0.5,
+                                     size=15,colour = "white"),
+        plot.caption = element_text(hjust = 0.5,
+                                    size=15,colour = "white"),
+        axis.text.x = element_text( colour="white"),
+        axis.text.y = element_text(colour="white"),
+        axis.title.x = element_text(colour = "white"),
+        axis.title.y = element_text(colour = "white"),
+        panel.background = element_rect("#182849"),
+        plot.background = element_rect(fill = "#182849"),
+        panel.border = element_rect(fill = NA, color = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
   plot(Graf)
 }
