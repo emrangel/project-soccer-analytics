@@ -228,7 +228,8 @@ posiciones_df <- posiciones_por_categoria %>%
 
 
 filtrar_por_tipo <- function(df, posiciones, variables, minutos = .minutes) {
-  columnas_base <- c("jugador", "equipo", "equipo_durante_el_periodo_seleccionado",
+
+  columnas_base <- c("jugador", "equipo","logo_team", "equipo_durante_el_periodo_seleccionado",
                      "posicion_especifica", "categoria","minutos", "edad", "pais_de_nacimiento")
   columnas_finales <- intersect(c(columnas_base, variables), colnames(df))
 
@@ -243,6 +244,14 @@ lista_dfs_posiciones_filtrados <- list()
 
 # df_fbref <- read_excel(paste0(.folder_data_input_r,"Betplay2021.xlsx"))
 # df_fbref <- read_excel(paste0(.folder_data_input_py,"LigaEcu/players/players_ecu.xlsx"))
+
+df_teams <- read_excel(paste0(.folder_data_input_r,"Teams.xlsx"), sheet = .country)
+
+df_teams <- df_teams %>%
+  mutate(
+    logo_team = paste0(toupper(substring(Country,1, 3)), "_", Code)
+  )
+
 df_fbref <- read_excel(paste0(.folder_data_input_py,"Argentina_B/players/players.xlsx")) %>%
   select(-c(81,109)) %>%
   filter(!is.na(Equipo))
@@ -255,6 +264,10 @@ df_fbref <- df_fbref %>%
     posicion_especifica = trimws(posicion_especifica),                    # elimina espacios
     posicion_especifica = toupper(substr(posicion_especifica, 1, 3))      # asegura mayúsculas y 3 letras
   )
+
+
+df_fbref <- df_fbref %>%
+  inner_join(df_teams, by=c("equipo"="Understat"))
 
 # Normalizar las posiciones (quitar espacios y homologar nombres)
 df_fbref <- df_fbref %>%
@@ -289,13 +302,12 @@ for (rol in names(posiciones_por_categoria)) {
   )
 }
 
-
-
 # FUNCIÓN DE FILTRADO
 filtrar_por_tipo <- function(df, posiciones, variables, minutos = .minutes) {
-  columnas_base <- c("jugador", "equipo", "equipo_durante_el_periodo_seleccionado",
+  columnas_base <- c("jugador", "equipo","logo_team", "equipo_durante_el_periodo_seleccionado",
                      "posicion_especifica","categoria", "minutos", "edad", "pais_de_nacimiento")
   columnas_finales <- intersect(c(columnas_base, variables), colnames(df))
+
   df %>%
     filter(posicion_especifica %in% posiciones, minutos >= minutos) %>%
     select(all_of(columnas_finales))
@@ -330,7 +342,7 @@ procesar_para_grafico <- function(df) {
   df[df == ""] <- 0
   df <- distinct(df)
 
-  melted <- reshape2::melt(df, id.vars = c("jugador", "equipo", "equipo_durante_el_periodo_seleccionado",
+  melted <- reshape2::melt(df, id.vars = c("jugador", "equipo","logo_team", "equipo_durante_el_periodo_seleccionado",
                                            "posicion_especifica","categoria", "minutos", "edad", "pais_de_nacimiento"))
 
   melted <- melted %>%
@@ -358,7 +370,7 @@ procesar_para_grafico <- function(df) {
   return(melted)
 }
 
-graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", nombre_equipo = "Gimnasia Mendoza") {
+graficar_jugador2 <- function(data_jugadores, categoria_metricas, rol = "", nombre_equipo = "Gimnasia Mendoza") {
   # browser()
   jugadores <- data_jugadores %>%
     filter(equipo == nombre_equipo) %>%
@@ -434,7 +446,8 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", nombr
     nombre_archivo <- toupper(gsub("\\.", "", jugador_actual))
     nombre_archivo <- gsub(" ", "_", nombre_archivo)
     # nombre_archivo <- paste0(Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
-    nombre_archivo2 <- paste0(Pintar_Jugador$categoria[1],"_",Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
+    nombre_archivo2 <- paste0(Pintar_Jugador$equipo[1], "_", nombre_archivo,Pintar_Jugador$categoria[1],".png")
+    # nombre_archivo2 <- paste0(Pintar_Jugador$categoria[1],"_",Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
     nombre_archivo <- paste0(Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
 
     # Ruta de la imagen del jugador
@@ -455,32 +468,172 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", nombr
       theme(plot.background = element_rect(fill = "white", color = NA))
 
     # Guardar en carpeta por tipo de rol
-    ruta_salida <- file.path(.folder_img_r,"output/", rol, paste0("plot_", nombre_archivo2))
+    ruta_salida <- file.path(.folder_img_r,"output/", rol, paste0(nombre_archivo2))
     ggsave(ruta_salida, plot = h, width = 34, height = 15, units = "cm")
   }
 }
 
-
 # Crear subcarpetas por tipo de jugador (si no existen)
-for (rol in names(lista_dfs_posiciones_filtrados)) {
-  dir_path <- file.path(.folder_img_r,'output/', rol)
-  if (!dir.exists(dir_path)) {
-    dir.create(dir_path, recursive = TRUE)
+# for (rol in names(lista_dfs_posiciones_filtrados)) {
+#   dir_path <- file.path(.folder_img_r,'output/', rol)
+#   if (!dir.exists(dir_path)) {
+#     dir.create(dir_path, recursive = TRUE)
+#   }
+# }
+#
+# for (rol in names(lista_dfs_posiciones_filtrados)) {
+#   cat("Procesando: ", rol, "\n")
+#   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
+#   df_procesado <- procesar_para_grafico(df_filtrado)
+#   # graficar_jugador(df_procesado, categoria_metricas, rol = '')
+#   graficar_jugador(df_procesado, categoria_metricas, rol = 'Total_players')
+# }
+
+
+graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equipos = c()) {
+  # browser()
+  df_exportados <- data.frame(
+    jugador = character(),
+    equipo = character(),
+    categoria = character(),
+    archivo_png = character(),
+    stringsAsFactors = FALSE
+  )
+
+  jugadores <- data_jugadores %>%
+    filter(equipo %in% equipos) %>%
+    pull(jugador) %>%
+    unique()
+
+  for (jugador_actual in jugadores) {
+    Pintar_Jugador <- data_jugadores %>%
+      filter(jugador == jugador_actual, equipo %in% equipos) %>%
+      mutate(value = round(value, 2),
+             pais_de_nacimiento = toupper(pais_de_nacimiento)) %>%
+      inner_join(categoria_metricas %>% select(variable, nombre_variable = nombre, tipo),
+                 by = "variable") %>%
+      distinct() %>%
+      mutate(nombre_variable = factor(nombre_variable, levels = nombre_variable[order(Ranking, decreasing = TRUE)]))
+
+    if (nrow(Pintar_Jugador) == 0) next
+
+    titulo <- paste("**", jugador_actual, "** (", Pintar_Jugador$edad[1], ") - ", Pintar_Jugador$categoria[1], sep = "")
+    subtitulo <- paste(Pintar_Jugador$equipo[1], " - ", .ligue, " (", Pintar_Jugador$minutos[1], ") - min\n",
+                       "Total jugadores: ", n_distinct(data_jugadores$jugador))
+
+    # Gráfico...
+    p <- ggplot(Pintar_Jugador, aes(x = Decil * 10, y = nombre_variable, group = tipo, color = RangoPercentil)) +
+      geom_segment(aes(yend = nombre_variable), xend = 0, size = 2) +
+      geom_point(size = 3.5) +
+      scale_colour_manual(values = coloresrango) +
+      ggrepel::geom_text_repel(
+        aes(label = value),
+        nudge_x = 0.3,
+        size = 3,
+        color = "black",
+        fontface = "bold",
+        hjust = -1,
+        vjust = 0.5,
+        min.segment.length = 3,
+        max.overlaps = Inf
+      ) +
+      scale_x_continuous(
+        expand = c(0, 0),
+        breaks = seq(0, 90, 10),
+        labels = paste0("p", seq(0, 90, 10))
+      ) +
+      annotate("rect", fill = "white", alpha = 0.5, color = "white",
+               xmin = 100, xmax = 109,
+               ymin = -Inf, ymax = Inf) +
+      geom_text(aes(label = paste0("#", Ranking, " (P", Decil * 10, ")"), y = nombre_variable, x = 104),
+                fontface = "bold.italic", size = 4, color = "black") +
+      labs(
+        title = titulo,
+        subtitle = subtitulo,
+        x = "",
+        y = "",
+        caption = paste("Source Wyscout - Minutes (", .minutes, ") by: Erick Rangel")
+      ) +
+      theme_bw() +
+      theme(
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        plot.title = ggtext::element_markdown(size = 16, hjust = 0.5, colour = "black"),
+        plot.subtitle = element_text(size = 10, hjust = 0.5, colour = "black"),
+        panel.border = element_blank(),
+        axis.line.y = element_blank(),
+        axis.line.x = element_line(),
+        axis.text.y = element_text(size = 12),
+        legend.title = element_blank(),
+        legend.direction = "horizontal",
+        legend.position = "bottom",
+        plot.margin = unit(c(2, 2, 2, 2), "cm"),
+        plot.caption = element_text(hjust = c(1, 1), size = 8)
+      )
+
+    # nombre de archivo
+    nombre_archivo <- toupper(gsub("\\.", "", jugador_actual))
+    nombre_archivo <- gsub(" ", "_", nombre_archivo)
+
+    nombre_archivo2 <- paste0(
+      gsub(" ", "_", toupper(Pintar_Jugador$categoria[1])), "_",
+      gsub(" ", "_", toupper(Pintar_Jugador$equipo[1])), "_",
+      nombre_archivo,
+      ".png"
+    )
+
+    # Ruta imagen, render y guardado
+    ruta_imagen_jugador <- file.path(.folder_img_r, "imagenes_jugadores", nombre_archivo)
+    ruta_imagen_default <- file.path(.folder_img_r, "default_sombra.png")
+    imagen_a_usar <- if (file.exists(ruta_imagen_jugador)) ruta_imagen_jugador else ruta_imagen_default
+
+    h <- cowplot::ggdraw(p) +
+      cowplot::draw_image(imagen_a_usar,
+                          x = -0.045, y = 0.41, scale = 0.12) +
+      # cowplot::draw_image(file.path(.folder_img_r, "ARG_GIM.png"),
+      cowplot::draw_image(file.path(paste0(.folder_img_r, Pintar_Jugador$logo_team, ".png")),
+                          x = -0.095, y = 0.41, scale = 0.12) +
+      theme(plot.background = element_rect(fill = "white", color = NA))
+
+    ruta_salida <- file.path(.folder_img_r, "output/", rol, nombre_archivo2)
+    ggsave(ruta_salida, plot = h, width = 34, height = 15, units = "cm")
+
+    # Registrar exportado
+    df_exportados <- rbind(df_exportados, data.frame(
+      jugador = jugador_actual,
+      equipo = Pintar_Jugador$equipo[1],
+      categoria = Pintar_Jugador$categoria[1],
+      archivo_png = nombre_archivo2,
+      stringsAsFactors = FALSE
+    ))
   }
+
+  return(df_exportados)
 }
+
+
+df_exportados_global <- data.frame()
 
 for (rol in names(lista_dfs_posiciones_filtrados)) {
   cat("Procesando: ", rol, "\n")
   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
   df_procesado <- procesar_para_grafico(df_filtrado)
-  graficar_jugador(df_procesado, categoria_metricas, rol = '')
+  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Gimnasia Mendoza")
+  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
+  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = rol, equipos = unique(df_filtrado$equipo))
+  df_exportados_global <- bind_rows(df_exportados_global, df_exportados)
 }
 
+# Unir con df_fbref
+df_fbref <- df_fbref %>%
+  left_join(df_exportados_global, by = c("jugador", "equipo", "categoria"))
 
 
+write.csv(df_fbref, file = file.path(.folder_data_out_r,"players_liga_argentina_B.csv"), row.names = FALSE)
 
 
-
+df_fbref %>% select(c(1:10),archivo_png) %>% filter(equipo == 'Gimnasia Mendoza') %>% view()
 
 ss
 
