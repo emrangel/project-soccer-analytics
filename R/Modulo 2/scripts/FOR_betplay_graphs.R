@@ -12,16 +12,12 @@ library(writexl)
 .folder_data_out_py <- 'Python/data/output/'
 .folder_img_out_r <- 'R/Modulo 2/img/output/'
 .folder_img_r <- 'R/Modulo 2/img/'
+
 .ligue <- 'Ecuador. Liga Pro'
 .ligue_short <- 'ECU_'
 .country <- 'Ecuador'
-.minutes = 10
 .team = 'Vinotinto de Ecuador'
-
-.ligue <- 'Argentina. Primera Nacional'
-.ligue_short <- 'ARG_'
-.country <- 'Argentina_B'
-.team = 'Gimnasia Mendoza'
+.minutes = 10
 
 getwd()
 
@@ -243,7 +239,8 @@ df_teams <- df_teams %>%
     logo_team = paste0(toupper(substring(Country,1, 3)), "_", Code)
   )
 
-df_fbref <- read_excel(paste0(.folder_data_input_py,"Argentina_B/players/players.xlsx")) %>%
+# df_fbref <- read_excel(paste0(.folder_data_input_py,"Argentina_B/players/players.xlsx")) %>%
+df_fbref <- read_excel(paste0(.folder_data_input_py,"Betplay/players/players.xlsx")) %>%
   select(-c(48,109)) %>%
   filter(!is.na(Equipo))
 
@@ -386,7 +383,12 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
       inner_join(categoria_metricas %>% select(variable, nombre_variable = name, tipo),
                  by = "variable") %>%
       distinct() %>%
-      mutate(nombre_variable = factor(nombre_variable, levels = nombre_variable[order(Ranking, decreasing = TRUE)]))
+      mutate(nombre_variable = factor(
+        nombre_variable,
+        levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
+      ))
+      # mutate(nombre_variable = factor(nombre_variable,
+    # levels = nombre_variable[order(Ranking, decreasing = TRUE)]))
 
     if (nrow(Pintar_Jugador) == 0) next
 
@@ -466,11 +468,13 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
 
     h <- cowplot::ggdraw(p) +
       cowplot::draw_image(imagen_a_usar,
-                          x = -0.045, y = 0.41, scale = 0.12) +
+                          x = -0.10, y = 0.41, scale = 0.12) +
       # cowplot::draw_image(file.path(.folder_img_r, "ARG_GIM.png"),
       cowplot::draw_image(file.path(paste0(.folder_img_r, Pintar_Jugador$logo_team, ".png")),
-                          x = -0.095, y = 0.41, scale = 0.12) +
+                          x = -0.15, y = 0.41, scale = 0.12) +
       theme(plot.background = element_rect(fill = "white", color = NA))
+
+    h
 
     ruta_salida <- file.path(.folder_img_r, "output/", rol, nombre_archivo2)
     ggsave(ruta_salida, plot = h, width = 34, height = 15, units = "cm")
@@ -495,7 +499,7 @@ for (rol in names(lista_dfs_posiciones_filtrados)) {
   cat("Procesando: ", rol, "\n")
   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
   df_procesado <- procesar_para_grafico(df_filtrado)
-  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Gimnasia Mendoza")
+  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Alianza")
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = rol, equipos = unique(df_filtrado$equipo))
   df_exportados_global <- bind_rows(df_exportados_global, df_exportados)
@@ -505,13 +509,15 @@ for (rol in names(lista_dfs_posiciones_filtrados)) {
 df_fbref <- df_fbref %>%
   left_join(df_exportados_global, by = c("jugador", "equipo", "categoria"))
 
-
-write.csv(df_fbref, file = file.path(.folder_data_out_r,"players_liga_argentina_B.csv"), row.names = FALSE)
-
+write.csv(df_fbref, file = file.path(paste0(.folder_data_out_r,.ligue,"_players.csv")), row.names = FALSE)
 
 df_fbref %>% select(c(1:10),archivo_png) %>% filter(equipo == 'Gimnasia Mendoza') %>% view()
 
 ss
+
+df_fbref %>%
+  filter(jugador %in% c('H. Rodallega', 'D. Moreno')) %>%
+  select(jugador, goles, x_g, goles_90, x_g_90, posicion_especifica)
 
 
 
