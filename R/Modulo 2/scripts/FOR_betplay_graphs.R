@@ -13,10 +13,10 @@ library(writexl)
 .folder_img_out_r <- 'R/Modulo 2/img/output/'
 .folder_img_r <- 'R/Modulo 2/img/'
 
-.ligue <- 'Ecuador. Liga Pro'
-.ligue_short <- 'ECU_'
-.country <- 'Ecuador'
-.team = 'Vinotinto de Ecuador'
+.ligue <- 'Colombia. Liga BetPlay'
+.ligue_short <- 'CO_'
+.country <- 'Colombia'
+.team = 'America de Cali'
 .minutes = 10
 
 getwd()
@@ -51,7 +51,7 @@ getwd()
     "duelos_defensivos_ganados_percent", "Duelos defensivos ganados (%)", "Defense", "Defensive duels won (%)",
     "duelos_aereos_en_los_90", "Duelos aéreos / 90", "Defense", "Aerial Duels / 90",
     "duelos_aereos_ganados_percent", "Duelos aéreos ganados (%)", "Defense", "Aerial duels won (%)",
-    "entradas_90", "Entradas / 90", "Defense", "Tickets / 90",
+    "entradas_90", "Entradas / 90", "Defense", "Tackles / 90",
     "posesion_conquistada_despues_de_una_entrada", "Posesión tras entrada", "Defense", "Possession after entry",
     "tiros_interceptados_90", "Tiros interceptados / 90", "Defense", "Intercepted shots / 90",
     "interceptaciones_90", "Intercepciones / 90", "Defense", "Interceptions / 90",
@@ -68,8 +68,8 @@ getwd()
     "x_g_90", "xG / 90", "Attack", "xG / 90",
     "goles_de_cabeza", "Goles de cabeza", "Attack", "Headed goals",
     "goles_de_cabeza_90", "Goles de cabeza / 90", "Attack", "Headed goals / 90",
-    "remates", "Remates", "Attack", "Auctions",
-    "remates_90", "Remates / 90", "Attack", "Auctions / 90",
+    "remates", "Remates", "Attack", "Shots",
+    "remates_90", "Remates / 90", "Attack", "Shots / 90",
     "tiros_a_la_porteria_percent", "Precisión de remates (%)", "Attack", "Shot accuracy (%)",
     "goles_hechos_percent", "Tasa de conversión (%)", "Attack", "Conversion rate (%)",
     "asistencias_90", "Asistencias / 90", "Creativity", "Assists / 90",
@@ -201,7 +201,7 @@ metricas_por_tipo <- list(
   Arqueros = c(
     "goles_recibidos_90", "x_g_en_contra_90", "goles_evitados_90",
     "paradas_percent", "porterias_imbatidas_en_los_90",
-    "remates_en_contra_90", "salidas_90", "pases_hacia_atras_recibidos_del_arquero_90",
+    "remates_en_contra_90", "salidas_90",
     "pases_largos_90", "precision_pases_largos_percent"
   )
 )
@@ -241,6 +241,7 @@ df_teams <- df_teams %>%
 
 # df_fbref <- read_excel(paste0(.folder_data_input_py,"Argentina_B/players/players.xlsx")) %>%
 df_fbref <- read_excel(paste0(.folder_data_input_py,"Betplay/players/players.xlsx")) %>%
+# df_fbref <- read_excel(paste0(.folder_data_input_py,"LigaEcu/players/players.xlsx")) %>%
   select(-c(48,109)) %>%
   filter(!is.na(Equipo))
 
@@ -280,6 +281,19 @@ df_fbref <- df_fbref %>%
     )
   ) %>%
   left_join(posiciones_df, by = "posicion_especifica")
+
+
+df_fbref <- df_fbref %>%
+  mutate(categoria = case_when(
+    categoria == "Delanteros" ~ "Forwards",
+    categoria == "Extremos" ~ "Wingers",
+    categoria == "Mediocampo_Ofensivo" ~ "Attacking Midfield",
+    categoria == "Mediocampo" ~ "Midfield",
+    categoria == "Mediocampo_Defensivo" ~ "Defensive Midfield",
+    categoria == "Defensas" ~ "Defenders",
+    categoria == "Arqueros" ~ "Goalkeepers",
+    TRUE ~ categoria
+  ))
 
 for (rol in names(posiciones_por_categoria)) {
   posiciones <- posiciones_por_categoria[[rol]]
@@ -394,13 +408,13 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
 
     titulo <- paste("**", jugador_actual, "** (", Pintar_Jugador$edad[1], ") - ", Pintar_Jugador$categoria[1], sep = "")
     subtitulo <- paste(Pintar_Jugador$equipo[1], " - ", .ligue, " (", Pintar_Jugador$minutos[1], ") - min\n",
-                       "Total jugadores: ", n_distinct(data_jugadores$jugador))
+                       "Total players: ", n_distinct(data_jugadores$jugador))
 
     # Gráfico...
     p <- ggplot(Pintar_Jugador, aes(x = Decil * 10, y = nombre_variable, group = tipo, color = RangoPercentil)) +
       geom_segment(aes(yend = nombre_variable), xend = 0, size = 2) +
       geom_point(size = 3.5) +
-      scale_colour_manual(values = coloresrango) +
+      scale_colour_manual(values = coloresrango, drop = FALSE) +
       ggrepel::geom_text_repel(
         aes(label = value),
         nudge_x = 0.3,
@@ -415,19 +429,19 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
       scale_x_continuous(
         expand = c(0, 0),
         breaks = seq(0, 90, 10),
-        labels = paste0("p", seq(0, 90, 10))
+        labels = paste0("q", seq(0, 90, 10))
       ) +
       annotate("rect", fill = "white", alpha = 0.5, color = "white",
                xmin = 100, xmax = 109,
                ymin = -Inf, ymax = Inf) +
-      geom_text(aes(label = paste0("#", Ranking, " (P", Decil * 10, ")"), y = nombre_variable, x = 104),
+      geom_text(aes(label = paste0("#", Ranking, " (q", Decil * 10, ")"), y = nombre_variable, x = 104),
                 fontface = "bold.italic", size = 4, color = "black") +
       labs(
         title = titulo,
         subtitle = subtitulo,
         x = "",
         y = "",
-        caption = paste("Source Wyscout - Minutes (", .minutes, ") by: Erick Rangel")
+        caption = paste("Source Wyscout - Minutes ( +", .minutes, ") by: Erick Rangel")
       ) +
       theme_bw() +
       theme(
@@ -499,7 +513,7 @@ for (rol in names(lista_dfs_posiciones_filtrados)) {
   cat("Procesando: ", rol, "\n")
   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
   df_procesado <- procesar_para_grafico(df_filtrado)
-  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Alianza")
+  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "América de Cali")
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = rol, equipos = unique(df_filtrado$equipo))
   df_exportados_global <- bind_rows(df_exportados_global, df_exportados)
@@ -510,6 +524,8 @@ df_fbref <- df_fbref %>%
   left_join(df_exportados_global, by = c("jugador", "equipo", "categoria"))
 
 write.csv(df_fbref, file = file.path(paste0(.folder_data_out_r,.ligue,"_players.csv")), row.names = FALSE)
+writexl::write_xlsx(df_fbref, path = file.path(paste0(.folder_data_out_r,.ligue,"_players.xlsx")))
+writexl::write_xlsx(categoria_metricas, path = file.path(paste0(.folder_data_out_r,.ligue,"_categorias.xlsx")))
 
 df_fbref %>% select(c(1:10),archivo_png) %>% filter(equipo == 'Gimnasia Mendoza') %>% view()
 
