@@ -1,5 +1,0 @@
-# Quarto
-
-Read
-
-Emrangela
