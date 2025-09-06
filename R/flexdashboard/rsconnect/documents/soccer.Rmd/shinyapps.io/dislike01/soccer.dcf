@@ -1,0 +1,12 @@
+name: soccer
+title: soccer
+username: dislike01
+account: dislike01
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10977027
+bundleId: 8164226
+url: https://dislike01.shinyapps.io/soccer/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

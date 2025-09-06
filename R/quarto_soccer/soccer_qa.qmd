@@ -1,0 +1,360 @@
+---
+title: Quarto (R-Python) - Soccer
+format: 
+  dashboard:
+    css: style.css
+---
+
+# Page 1
+
+## Row {.tabset}
+
+### Graph with R
+```{r}
+#| echo: false
+#| class: output 
+library('rvest')
+library('dplyr')
+library('ggplot2')
+library("ggrepel")
+library("jsonlite")
+library("SBpitch")
+library('httr')
+# install.packages("devtools")
+# devtools::install_github("FCrSTATS/SBpitch")
+
+################
+
+# Establecer los encabezados
+headers <- httr::add_headers(
+  `User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+  `Accept` = "application/json, text/plain, */*",
+  `Cache-Control` = "public, max-age=300",
+  `X-Client-Version` = "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+  `X-Mas` = "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ=="
+)
+
+# Crear la URL con el matchId
+
+matchid <- '4506980'
+url_stats_match = paste0("https://www.fotmob.com/api/matchDetails?matchId=",matchid,"&showNewUefaBracket=true")
+
+# Hacer la solicitud GET con encabezados
+response <- httr::GET(url_stats_match, headers)
+
+# Verificar el código de estado
+print(httr::status_code(response))  # Verifica si devuelve 200
+
+# Obtener el contenido en formato JSON
+stats_match <- httr::content(response, "parsed")
+
+## Crear las metricas para el grafico
+shots = as.data.frame(do.call(rbind, stats_match$content$shotmap$shots))
+teams <- as.data.frame(do.call(rbind, stats_match$header$teams)) %>% mutate(home_away = c(1,2))
+hight = stats_match$content$matchFacts$highlights$image
+
+shots = left_join(shots, teams, by = c("teamId"="id"))
+
+df_tiros = shots
+
+logo_team1 = df_tiros %>% filter(home_away == 1 )%>% distinct(imageUrl)
+gol_team1 <- df_tiros %>% filter(eventType == 'Goal' & home_away == 1)
+no_gol_team1 <- df_tiros %>% filter(eventType != 'Goal' & home_away == 1)
+
+logo_team2 = df_tiros %>% filter(home_away == 2)%>% distinct(imageUrl)
+gol_team2 <- df_tiros %>% filter(eventType == 'Goal' & home_away == 2)
+no_gol_team2 <- df_tiros %>% filter(eventType != 'Goal' & home_away == 2)
+
+
+gol_team1$x <- as.numeric(gol_team1$x)
+gol_team1$y <- as.numeric(gol_team1$y)
+
+no_gol_team1$x <- as.numeric(no_gol_team1$x)
+no_gol_team1$y <- as.numeric(no_gol_team1$y)
+
+gol_team2$x <- as.numeric(gol_team2$x)
+gol_team2$y <- as.numeric(gol_team2$y)
+
+no_gol_team2$x <- as.numeric(no_gol_team2$x)
+no_gol_team2$y <- as.numeric(no_gol_team2$y)
+
+# Crear el gráfico
+blank_pitch <- create_Pitch(
+  goaltype = "box",
+  grass_colour = "#202020", 
+  line_colour = "#797876", 
+  background_colour = "#202020", 
+  goal_colour = "#131313"
+)
+
+# Dibujar el gráfico de puntos
+blank_pitch + 
+  geom_point(data = gol_team1, aes(x = 105 - x , y = y + 8 ),shape = "\U26BD",size = 4, color = "#94c7c3") +
+  geom_point(data = no_gol_team1, aes(x = 105 - x , y = y + 8), color = "#eb9293", alpha = 0.6) +
+  geom_point(data = gol_team2, aes(x = x + 15, y = y + 8),shape = "\U26BD",size = 4,  color = "#94c7c3") +
+  geom_point(data = no_gol_team2, aes(x = x + 15, y = y + 8), color = "#eb9293", alpha = 0.6) +
+  cowplot::draw_image(logo_team2$imageUrl %>% unlist(),
+                      x = 110, y = 1, width = 7.5, height = 7.5) +
+  cowplot::draw_image(logo_team1$imageUrl %>% unlist(),
+                      x = 105- 100, y = 1, width = 7.5, height = 7.5) +
+  cowplot::draw_image(hight,
+                      x = 40, y = -10, width = 40, height = 50)
+
+
+```
+```{{r}, class output:}
+#| echo: false
+#| class: output 
+library('rvest')
+library('dplyr')
+library('ggplot2')
+library("ggrepel")
+library("jsonlite")
+library("SBpitch")
+# install.packages("devtools")
+# devtools::install_github("FCrSTATS/SBpitch")
+
+################
+
+# Establecer los encabezados
+headers <- httr::add_headers(
+  `User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+  `Accept` = "application/json, text/plain, */*",
+  `Cache-Control` = "public, max-age=300",
+  `X-Client-Version` = "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+  `X-Mas` = "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ=="
+)
+
+# Crear la URL con el matchId
+
+matchid <- '4506980'
+url_stats_match = paste0("https://www.fotmob.com/api/matchDetails?matchId=",matchid,"&showNewUefaBracket=true")
+
+# Hacer la solicitud GET con encabezados
+response <- httr::GET(url_stats_match, headers)
+
+# Verificar el código de estado
+print(httr::status_code(response))  # Verifica si devuelve 200
+
+# Obtener el contenido en formato JSON
+stats_match <- httr::content(response, "parsed")
+
+## Crear las metricas para el grafico
+shots = as.data.frame(do.call(rbind, stats_match$content$shotmap$shots))
+teams <- as.data.frame(do.call(rbind, stats_match$header$teams)) %>% mutate(home_away = c(1,2))
+hight = stats_match$content$matchFacts$highlights$image
+
+shots = left_join(shots, teams, by = c("teamId"="id"))
+
+df_tiros = shots
+
+logo_team1 = df_tiros %>% filter(home_away == 1 )%>% distinct(imageUrl)
+gol_team1 <- df_tiros %>% filter(eventType == 'Goal' & home_away == 1)
+no_gol_team1 <- df_tiros %>% filter(eventType != 'Goal' & home_away == 1)
+
+logo_team2 = df_tiros %>% filter(home_away == 2)%>% distinct(imageUrl)
+gol_team2 <- df_tiros %>% filter(eventType == 'Goal' & home_away == 2)
+no_gol_team2 <- df_tiros %>% filter(eventType != 'Goal' & home_away == 2)
+
+
+gol_team1$x <- as.numeric(gol_team1$x)
+gol_team1$y <- as.numeric(gol_team1$y)
+
+no_gol_team1$x <- as.numeric(no_gol_team1$x)
+no_gol_team1$y <- as.numeric(no_gol_team1$y)
+
+gol_team2$x <- as.numeric(gol_team2$x)
+gol_team2$y <- as.numeric(gol_team2$y)
+
+no_gol_team2$x <- as.numeric(no_gol_team2$x)
+no_gol_team2$y <- as.numeric(no_gol_team2$y)
+
+# Crear el gráfico
+blank_pitch <- create_Pitch(
+  goaltype = "box",
+  grass_colour = "#202020", 
+  line_colour = "#797876", 
+  background_colour = "#202020", 
+  goal_colour = "#131313"
+)
+
+# Dibujar el gráfico de puntos
+blank_pitch + 
+  geom_point(data = gol_team1, aes(x = 105 - x , y = y + 8 ),shape = "\U26BD",size = 4, color = "#94c7c3") +
+  geom_point(data = no_gol_team1, aes(x = 105 - x , y = y + 8), color = "#eb9293", alpha = 0.6) +
+  geom_point(data = gol_team2, aes(x = x + 15, y = y + 8),shape = "\U26BD",size = 4,  color = "#94c7c3") +
+  geom_point(data = no_gol_team2, aes(x = x + 15, y = y + 8), color = "#eb9293", alpha = 0.6) +
+  cowplot::draw_image(logo_team2$imageUrl %>% unlist(),
+                      x = 110, y = 1, width = 7.5, height = 7.5) +
+  cowplot::draw_image(logo_team1$imageUrl %>% unlist(),
+                      x = 105- 100, y = 1, width = 7.5, height = 7.5) +
+  cowplot::draw_image(hight,
+                      x = 40, y = -10, width = 40, height = 50)
+```
+
+### Graph with python
+
+```{python}
+#| echo: false
+#| class: output
+
+import requests
+import json
+import pandas as pd
+from bs4 import BeautifulSoup
+import matplotlib.image as mpimg
+from mplsoccer import Pitch
+import matplotlib.pyplot as plt
+import numpy as np
+import urllib.request
+import PIL
+
+# libraries to graph
+from mplsoccer import Pitch
+import matplotlib.pyplot as plt
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Cache-Control": "public, max-age=300",
+    "X-Client-Version": "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+    "X-Mas": "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ==",
+}
+
+url = "https://www.fotmob.com/api/matchDetails?matchId=4506980&showNewUefaBracket=true"
+
+response = requests.get(url, headers=headers)
+
+json_fotmob = response.json()
+
+#print(response.text)
+
+df_teams = pd.DataFrame(json_fotmob['header']['teams'])
+df_teams['home_way'] = [1,2]
+
+df_tiros = pd.DataFrame(json_fotmob['content']['shotmap']['shots'])
+df_tiros = pd.merge(df_tiros, df_teams, how='left', left_on='teamId', right_on='id')
+
+logo_team1 = df_tiros[df_tiros['home_way'] == 1]['imageUrl'].unique()
+gol_team1 = df_tiros[(df_tiros['eventType'] == 'Goal') & (df_tiros['home_way'] == 1)]
+no_gol_team1 = df_tiros[df_tiros['eventType'] != 'Goal'][df_tiros.home_way == 1]
+
+logo_team2 = df_tiros[df_tiros['home_way'] == 2]['imageUrl'].unique()
+gol_team2 = df_tiros[(df_tiros['eventType'] == 'Goal') & (df_tiros['home_way'] == 2)]
+no_gol_team2 = df_tiros[df_tiros['eventType'] != 'Goal']
+
+fig, ax = plt.subplots(figsize = (30,14))
+pitch = Pitch(pitch_type='custom',pitch_length=105, pitch_width=68)
+pitch.draw(ax=ax)
+
+fig = pitch.scatter(105 - gol_team1.x, 68 - gol_team1.y, ax=ax, marker='football')
+fig = pitch.scatter(105 - no_gol_team1.x, 68 - no_gol_team1.y, ax=ax, alpha = 0.6)
+fig = pitch.scatter(gol_team2.x, gol_team2.y, ax=ax, marker='football')
+fig = pitch.scatter(no_gol_team2.x, no_gol_team2.y, ax=ax, alpha = 0.6)
+
+#pitch.scatter(gol_team2.x, no_gol_team2.y, ax=ax, alpha=.6)
+
+logo_team1_url = urllib.request.urlretrieve(logo_team1[0], "images/"+ df_teams.iloc[0, 0]+".png")
+logo_team1_url =  df_teams.iloc[0, 0]+".png"
+img = PIL.Image.open("images/" + logo_team1_url)
+# Mostrar el logo del equipo 1 en el gráfico
+fig = ax.imshow(img, extent=[0, 20, 0, 20], alpha=0.5)
+
+logo_team2_url = urllib.request.urlretrieve(logo_team2[0], "images/"+ df_teams.iloc[1, 0]+".png")
+logo_team2_url =  df_teams.iloc[1, 0]+".png"
+img2 = PIL.Image.open("images/" + logo_team2_url)
+# Mostrar el logo del equipo 1 en el gráfico
+fig = ax.imshow(img2, extent=[80, 100, 0, 20], alpha=0.5)
+plt.show()
+```
+```{{python}, class output: }
+#| echo: false
+#| class: output
+
+import requests
+import json
+import pandas as pd
+from bs4 import BeautifulSoup
+import matplotlib.image as mpimg
+from mplsoccer import Pitch
+import matplotlib.pyplot as plt
+import numpy as np
+import urllib.request
+import PIL
+
+# libraries to graph
+from mplsoccer import Pitch
+import matplotlib.pyplot as plt
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Cache-Control": "public, max-age=300",
+    "X-Client-Version": "production:9574079b5bff3c8ab725e1989963fb3121f67e2f-undefined",
+    "X-Mas": "eyJib2R5Ijp7InVybCI6Ii9hcGkvbWF0Y2hEZXRhaWxzP21hdGNoSWQ9NDUwNjk4MCZzaG93TmV3VWVmYUJyYWNrZXQ9dHJ1ZSIsImNvZGUiOjE3MzkxMTg5NzY1NTIsImZvbyI6InByb2R1Y3Rpb246OTU3NDA3OWI1YmZmM2M4YWI3MjVlMTk4OTk2M2ZiMzEyMWY2N2UyZi11bmRlZmluZWQifSwic2lnbmF0dXJlIjoiMDU5N0JGMEJCOENEMTUxQzJBQjY1MzlEMURCMUI4NjIifQ==",
+}
+
+url = "https://www.fotmob.com/api/matchDetails?matchId=4506980&showNewUefaBracket=true"
+
+response = requests.get(url, headers=headers)
+
+json_fotmob = response.json()
+
+#print(response.text)
+
+df_teams = pd.DataFrame(json_fotmob['header']['teams'])
+df_teams['home_way'] = [1,2]
+
+df_tiros = pd.DataFrame(json_fotmob['content']['shotmap']['shots'])
+df_tiros = pd.merge(df_tiros, df_teams, how='left', left_on='teamId', right_on='id')
+
+logo_team1 = df_tiros[df_tiros['home_way'] == 1]['imageUrl'].unique()
+gol_team1 = df_tiros[(df_tiros['eventType'] == 'Goal') & (df_tiros['home_way'] == 1)]
+no_gol_team1 = df_tiros[df_tiros['eventType'] != 'Goal'][df_tiros.home_way == 1]
+
+logo_team2 = df_tiros[df_tiros['home_way'] == 2]['imageUrl'].unique()
+gol_team2 = df_tiros[(df_tiros['eventType'] == 'Goal') & (df_tiros['home_way'] == 2)]
+no_gol_team2 = df_tiros[df_tiros['eventType'] != 'Goal']
+
+fig, ax = plt.subplots(figsize = (30,14))
+pitch = Pitch(pitch_type='custom',pitch_length=105, pitch_width=68)
+pitch.draw(ax=ax)
+
+fig = pitch.scatter(105 - gol_team1.x, 68 - gol_team1.y, ax=ax, marker='football')
+fig = pitch.scatter(105 - no_gol_team1.x, 68 - no_gol_team1.y, ax=ax, alpha = 0.6)
+fig = pitch.scatter(gol_team2.x, gol_team2.y, ax=ax, marker='football')
+fig = pitch.scatter(no_gol_team2.x, no_gol_team2.y, ax=ax, alpha = 0.6)
+
+#pitch.scatter(gol_team2.x, no_gol_team2.y, ax=ax, alpha=.6)
+
+logo_team1_url = urllib.request.urlretrieve(logo_team1[0], "images/"+ df_teams.iloc[0, 0]+".png")
+logo_team1_url =  df_teams.iloc[0, 0]+".png"
+img = PIL.Image.open("images/" + logo_team1_url)
+# Mostrar el logo del equipo 1 en el gráfico
+fig = ax.imshow(img, extent=[0, 20, 0, 20], alpha=0.5)
+
+logo_team2_url = urllib.request.urlretrieve(logo_team2[0], "images/"+ df_teams.iloc[1, 0]+".png")
+logo_team2_url =  df_teams.iloc[1, 0]+".png"
+img2 = PIL.Image.open("images/" + logo_team2_url)
+# Mostrar el logo del equipo 1 en el gráfico
+fig = ax.imshow(img2, extent=[80, 100, 0, 20], alpha=0.5)
+plt.show()
+
+# how deploy 
+
+quarto publish quarto-pub
+Y
+Y
+
+
+```
+
+# Page 2
+
+# Sesión R
+
+```{r}
+sessionInfo()
+```
+
+

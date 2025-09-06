@@ -1,0 +1,72 @@
+ccode,primary_id,id,name,parent_league_id,parent_league_name
+ENG,47,47,Premier League,,
+ESP,87,87,LaLiga,,
+GER,54,54,Bundesliga,,
+ITA,55,55,Serie A,,
+INT,290,885368,Asian Cup Grp. F,290,Asian Cup
+FRA,134,134,Coupe de France,,
+INT,289,888009,Africa Cup of Nations Grp. E,289,Africa Cup of Nations
+INT,289,888010,Africa Cup of Nations Grp. F,289,Africa Cup of Nations
+AUS,113,887296,A-League Men,113,
+AUS,9495,887324,A-League Women,9495,
+AZE,262,262,Premier League,,
+BEL,40,885920,First Division A,40,
+BEL,264,885921,First Division B,264,
+BRA,10290,889405,Baiano,10290,
+BRA,10272,889281,Carioca Taca Guanabara,10272,
+BRA,10274,889406,Gaucho,10274,
+BRA,10244,889542,Paulista A1,10244,
+INT,489,889181,Club Friendlies,489,
+COL,274,889836,Primera A Apertura,274,
+CRC,121,889742,Primera Division Clausura,121,
+CYP,136,886597,1. Division,136,
+CYP,9100,890366,2. Division Promotion Group,9100,
+CYP,9100,890365,2. Division Relegation Group,9100,
+SLV,335,890191,Primera Division - Clausura,335,
+ENG,48,885641,Championship,48,
+ENG,8947,886489,Southern Premier Division Central,8947,
+ENG,9227,9227,WSL,,
+ENG,9294,887356,Women's Championship,9294,
+FRA,9677,9677,Division 1 Feminine,,
+GER,146,146,2. Bundesliga,,
+GER,208,208,3. Liga,,
+GER,512,885908,Regionalliga Northeast,512,
+GRE,135,886523,Super League,135,
+GRE,8815,887527,Super League 2 Grp. A,8815,
+GRE,8815,887526,Super League 2 Grp. B,8815,
+GUA,336,890039,Liga Nacional Clausura,336,
+HON,337,889811,Liga Nacional - Clausura,337,
+IND,10366,890005,Super Cup Grp. C,10366,Super Cup
+ISR,127,886005,Ligat HaAl,127,
+ITA,86,886421,Serie B,86,
+ITA,147,886491,Serie C Grp. A,147,Serie C
+ITA,147,886492,Serie C Grp. B,147,Serie C
+ITA,147,886493,Serie C Grp. C,147,Serie C
+ITA,10178,887214,Serie A Femminile,10178,
+MEX,230,889724,Liga MX Clausura,230,
+MEX,8976,889879,Liga de Expansion MX Clausura,8976,
+MEX,9906,889876,Liga MX Femenil Clausura,9906,
+NED,57,886182,Eredivisie,57,
+NED,9195,9195,Tweede Divisie,,
+NED,10289,10289,Eredivisie Vrouwen,,
+NGA,533,887357,NPFL,533,
+PAN,9039,890232,LPF Apertura,9039,
+PAR,199,889430,Division Profesional - Apertura,199,
+POR,61,61,Liga Portugal,,
+POR,185,185,Liga Portugal 2,,
+POR,9112,886379,Liga 3 Zona A,9112,Liga 3
+POR,9112,886380,Liga 3 Zona B,9112,Liga 3
+ROU,189,886180,Superliga,189,
+SCO,137,887406,FA Cup,137,
+ESP,140,886189,LaLiga2,140,
+ESP,8968,886602,Primera Federacion - Group 1,8968,Primera Federación
+ESP,8968,886603,Primera Federacion - Group 2,8968,Primera Federación
+ESP,9138,886653,Segunda Federacion - Group 1,9138,Segunda Federación
+ESP,9138,886655,Segunda Federacion - Group 2,9138,Segunda Federación
+ESP,9138,886656,Segunda Federacion - Group 3,9138,Segunda Federación
+ESP,9138,886658,Segunda Federacion - Group 4,9138,Segunda Federación
+ESP,9138,886659,Segunda Federacion - Group 5,9138,Segunda Federación
+ESP,9907,886624,Liga F,9907,
+SUI,69,69,Super League,,
+TUR,71,71,Super Lig,,
+TUR,165,165,1. Lig,,
