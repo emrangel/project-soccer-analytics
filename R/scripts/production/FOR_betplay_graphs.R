@@ -6,12 +6,12 @@ library(readxl)
 library(dplyr)
 library(writexl)
 
-.folder_data_input_r <- 'R/Modulo 2/data/input/'
-.folder_data_out_r <- 'R/Modulo 2/data/out/'
+.folder_data_input_r <- 'R/data/input/'
+.folder_data_out_r <- 'R/data/output/'
 .folder_data_input_py <- 'Python/data/input/'
 .folder_data_out_py <- 'Python/data/output/'
-.folder_img_out_r <- 'R/Modulo 2/img/output/'
-.folder_img_r <- 'R/Modulo 2/img/'
+.folder_img_out_r <- 'R/img/output/'
+.folder_img_r <- 'R/img/'
 
 .ligue <- 'Colombia. Liga BetPlay'
 .ligue_short <- 'CO_'
@@ -143,68 +143,68 @@ getwd()
 
 
 {
-# Posiciones por tipo de jugador
-posiciones_por_categoria <- list(
-  Delanteros = c("CF"),
-  Extremos = c("RW", "RWF", "LW", "LWF"),
-  Mediocampo_Ofensivo = c("AMF", "RAMF", "LAMF"),
-  Mediocampo = c("CMF", "RCMF", "LCMF"),
-  Mediocampo_Defensivo = c("DMF", "RDMF", "LDMF"),
-  Defensas = c("CB", "RCB", "RB", "RWB", "LCB", "LB", "LWB"),
-  Arqueros = c("GK")
-)
-
-# Métricas más relevantes por tipo
-metricas_por_tipo <- list(
-  Delanteros = c(
-    "goles_90", "x_g_90", "x_a_90","goles_excepto_los_penaltis_90", "asistencias_90",
-    "remates_90", "tiros_a_la_porteria_percent", "toques_en_el_area_de_penalti_90",
-    "duelos_atacantes_90", "duelos_atacantes_ganados_percent", "desmarques_90",
-    "precision_desmarques_percent", "carreras_en_progresion_90", "pases_al_area_de_penalti_90"
-  ),
-  Extremos = c(
-    "regates_90", "regates_realizados_percent", "asistencias_90", "x_g_90", "x_a_90",
-    "centros_90", "precision_centros_percent", "pases_en_el_ultimo_tercio_90",
-    "precision_pases_en_el_ultimo_tercio_percent", "duelos_atacantes_90",
-    "duelos_atacantes_ganados_percent", "toques_en_el_area_de_penalti_90",
-    "carreras_en_progresion_90", "desmarques_90", "pases_al_area_de_penalti_90"
-  ),
-  Mediocampo_Ofensivo = c(
-    "asistencias_90","x_g_90", "x_a_90", "jugadas_claves_90", "pases_en_el_ultimo_tercio_90",
-    "precision_pases_en_el_ultimo_tercio_percent", "remates_90",
-    "goles_90", "pases_progresivos_90", "pases_al_area_de_penalti_90",
-    "carreras_en_progresion_90", "toques_en_el_area_de_penalti_90",
-    "second_assists_90", "pases_en_profundidad_90"
-  ),
-  Mediocampo = c(
-    "pases_90","x_g_90", "x_a_90", "precision_pases_percent", "pases_hacia_adelante_90",
-    "precision_pases_hacia_adelante_percent", "pases_largos_90",
-    "precision_pases_largos_percent", "pases_progresivos_90",
-    "jugadas_claves_90", "duelos_90", "duelos_ganados_percent",
-    "interceptaciones_90", "entradas_90", "posesion_conquistada_despues_de_una_interceptacion",
-    "faltas_90"
-  ),
-  Mediocampo_Defensivo = c(
-    "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
-    "entradas_90", "posesion_conquistada_despues_de_una_entrada", "pases_90",
-    "precision_pases_percent", "pases_hacia_atras_90", "precision_pases_hacia_atras_percent",
-    "faltas_90", "tarjetas_amarillas_90", "posesion_conquistada_despues_de_una_interceptacion",
-    "pases_laterales_90", "precision_pases_laterales_percent"
-  ),
-  Defensas = c(
-    "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
-    "entradas_90", "duelos_aereos_en_los_90", "duelos_aereos_ganados_percent",
-    "posesion_conquistada_despues_de_una_entrada", "tiros_interceptados_90",
-    "pases_90", "precision_pases_percent", "pases_largos_90",
-    "precision_pases_largos_percent", "faltas_90", "tarjetas_amarillas_90"
-  ),
-  Arqueros = c(
-    "goles_recibidos_90", "x_g_en_contra_90", "goles_evitados_90",
-    "paradas_percent", "porterias_imbatidas_en_los_90",
-    "remates_en_contra_90", "salidas_90",
-    "pases_largos_90", "precision_pases_largos_percent"
+  # Posiciones por tipo de jugador
+  posiciones_por_categoria <- list(
+    Delanteros = c("CF"),
+    Extremos = c("RW", "RWF", "LW", "LWF"),
+    Mediocampo_Ofensivo = c("AMF", "RAMF", "LAMF"),
+    Mediocampo = c("CMF", "RCMF", "LCMF"),
+    Mediocampo_Defensivo = c("DMF", "RDMF", "LDMF"),
+    Defensas = c("CB", "RCB", "RB", "RWB", "LCB", "LB", "LWB"),
+    Arqueros = c("GK")
   )
-)
+
+  # Métricas más relevantes por tipo
+  metricas_por_tipo <- list(
+    Delanteros = c(
+      "goles_90", "x_g_90", "x_a_90","goles_excepto_los_penaltis_90", "asistencias_90",
+      "remates_90", "tiros_a_la_porteria_percent", "toques_en_el_area_de_penalti_90",
+      "duelos_atacantes_90", "duelos_atacantes_ganados_percent", "desmarques_90",
+      "precision_desmarques_percent", "carreras_en_progresion_90", "pases_al_area_de_penalti_90"
+    ),
+    Extremos = c(
+      "regates_90", "regates_realizados_percent", "asistencias_90", "x_g_90", "x_a_90",
+      "centros_90", "precision_centros_percent", "pases_en_el_ultimo_tercio_90",
+      "precision_pases_en_el_ultimo_tercio_percent", "duelos_atacantes_90",
+      "duelos_atacantes_ganados_percent", "toques_en_el_area_de_penalti_90",
+      "carreras_en_progresion_90", "desmarques_90", "pases_al_area_de_penalti_90"
+    ),
+    Mediocampo_Ofensivo = c(
+      "asistencias_90","x_g_90", "x_a_90", "jugadas_claves_90", "pases_en_el_ultimo_tercio_90",
+      "precision_pases_en_el_ultimo_tercio_percent", "remates_90",
+      "goles_90", "pases_progresivos_90", "pases_al_area_de_penalti_90",
+      "carreras_en_progresion_90", "toques_en_el_area_de_penalti_90",
+      "second_assists_90", "pases_en_profundidad_90"
+    ),
+    Mediocampo = c(
+      "pases_90","x_g_90", "x_a_90", "precision_pases_percent", "pases_hacia_adelante_90",
+      "precision_pases_hacia_adelante_percent", "pases_largos_90",
+      "precision_pases_largos_percent", "pases_progresivos_90",
+      "jugadas_claves_90", "duelos_90", "duelos_ganados_percent",
+      "interceptaciones_90", "entradas_90", "posesion_conquistada_despues_de_una_interceptacion",
+      "faltas_90"
+    ),
+    Mediocampo_Defensivo = c(
+      "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
+      "entradas_90", "posesion_conquistada_despues_de_una_entrada", "pases_90",
+      "precision_pases_percent", "pases_hacia_atras_90", "precision_pases_hacia_atras_percent",
+      "faltas_90", "tarjetas_amarillas_90", "posesion_conquistada_despues_de_una_interceptacion",
+      "pases_laterales_90", "precision_pases_laterales_percent"
+    ),
+    Defensas = c(
+      "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
+      "entradas_90", "duelos_aereos_en_los_90", "duelos_aereos_ganados_percent",
+      "posesion_conquistada_despues_de_una_entrada", "tiros_interceptados_90",
+      "pases_90", "precision_pases_percent", "pases_largos_90",
+      "precision_pases_largos_percent", "faltas_90", "tarjetas_amarillas_90"
+    ),
+    Arqueros = c(
+      "goles_recibidos_90", "x_g_en_contra_90", "goles_evitados_90",
+      "paradas_percent", "porterias_imbatidas_en_los_90",
+      "remates_en_contra_90", "salidas_90",
+      "pases_largos_90", "precision_pases_largos_percent"
+    )
+  )
 }
 
 # Convertir lista a data.frame con dos columnas: categoria y posicion
@@ -239,10 +239,13 @@ df_teams <- df_teams %>%
     logo_team = paste0(toupper(substring(Country,1, 3)), "_", Code)
   )
 
-# df_fbref <- read_excel(paste0(.folder_data_input_py,"Argentina_B/players/players.xlsx")) %>%
-df_fbref <- read_excel(paste0(.folder_data_input_py,"Betplay/players/players.xlsx")) %>%
-# df_fbref <- read_excel(paste0(.folder_data_input_py,"LigaEcu/players/players.xlsx")) %>%
-  select(-c(48,109)) %>%
+# Buscar todos los archivos .xlsx en la carpeta
+.files <- list.files(paste0(.folder_data_input_py,"Betplay/players/"), pattern = "\\.xlsx$", full.names = TRUE)
+
+# Leer y unir todos los Excel
+df_fbref <- .files %>%
+  map_dfr(~ read_excel(.x) %>% mutate(source = basename(.x))) %>%
+  select(-c(48, 109)) %>%
   filter(!is.na(Equipo))
 
 names(df_fbref) <- gsub("\\.\\.\\.[0-9]+$", "", names(df_fbref))
@@ -375,7 +378,7 @@ procesar_para_grafico <- function(df) {
 }
 
 graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equipos = c()) {
-  # browser()
+  browser()
   df_exportados <- data.frame(
     jugador = character(),
     equipo = character(),
@@ -401,7 +404,7 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
         nombre_variable,
         levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
       ))
-      # mutate(nombre_variable = factor(nombre_variable,
+    # mutate(nombre_variable = factor(nombre_variable,
     # levels = nombre_variable[order(Ranking, decreasing = TRUE)]))
 
     if (nrow(Pintar_Jugador) == 0) next
@@ -474,17 +477,16 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
 
     name_player <- paste0(Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
 
-
     # Ruta imagen, render y guardado
-    ruta_imagen_jugador <- file.path(.folder_img_r, "imagenes_jugadores", name_player)
-    ruta_imagen_default <- file.path(.folder_img_r, "default_sombra.png")
+    ruta_imagen_jugador <- file.path(paste0(.folder_img_r,"input/players/", name_player))
+    ruta_imagen_default <- file.path(paste0(.folder_img_r,"input/players/01.default/", "default_sombra.png"))
     imagen_a_usar <- if (file.exists(ruta_imagen_jugador)) ruta_imagen_jugador else ruta_imagen_default
 
     h <- cowplot::ggdraw(p) +
       cowplot::draw_image(imagen_a_usar,
                           x = -0.10, y = 0.41, scale = 0.12) +
       # cowplot::draw_image(file.path(.folder_img_r, "ARG_GIM.png"),
-      cowplot::draw_image(file.path(paste0(.folder_img_r, Pintar_Jugador$logo_team, ".png")),
+      cowplot::draw_image(file.path(paste0(.folder_img_r,"input/teams/",.country,"/", Pintar_Jugador$logo_team, ".png")),
                           x = -0.15, y = 0.41, scale = 0.12) +
       theme(plot.background = element_rect(fill = "white", color = NA))
 
@@ -923,7 +925,7 @@ for (i in seq_along(jugadores_vinotinto)) {
       x = "",
       y = "",
       caption = paste("Source Wyscout - Minutes (", .minutes, ") by: Erick Rangel")
-      ) +
+    ) +
     theme_bw() +
     theme(
       panel.grid.major.y = element_blank(),
