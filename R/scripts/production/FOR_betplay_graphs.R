@@ -8,16 +8,16 @@ library(writexl)
 
 .folder_data_input_r <- 'R/data/input/'
 .folder_data_out_r <- 'R/data/output/'
-.folder_data_input_py <- 'Python/data/input/'
+.folder_data_input_py <- 'Python/data/input/year/2025/'
 .folder_data_out_py <- 'Python/data/output/'
 .folder_img_out_r <- 'R/img/output/'
 .folder_img_r <- 'R/img/'
 
-.ligue <- 'Colombia. Liga BetPlay'
-.ligue_short <- 'CO_'
-.country <- 'Colombia'
-.team = 'America de Cali'
-.minutes = 10
+.ligue <- 'Argentina'
+.ligue_short <- 'ARG_'
+.country <- 'Argentina'
+.team = 'NA'
+.minutes = 300
 
 getwd()
 
@@ -150,7 +150,8 @@ getwd()
     Mediocampo_Ofensivo = c("AMF", "RAMF", "LAMF"),
     Mediocampo = c("CMF", "RCMF", "LCMF"),
     Mediocampo_Defensivo = c("DMF", "RDMF", "LDMF"),
-    Defensas = c("CB", "RCB", "RB", "RWB", "LCB", "LB", "LWB"),
+    Defensas = c("CB", "RCB", "LCB"),
+    Defensas_Extremos = c("RWB","RB", "LB", "LWB"),
     Arqueros = c("GK")
   )
 
@@ -177,19 +178,42 @@ getwd()
       "second_assists_90", "pases_en_profundidad_90"
     ),
     Mediocampo = c(
-      "pases_90","x_g_90", "x_a_90", "precision_pases_percent", "pases_hacia_adelante_90",
-      "precision_pases_hacia_adelante_percent", "pases_largos_90",
-      "precision_pases_largos_percent", "pases_progresivos_90",
-      "jugadas_claves_90", "duelos_90", "duelos_ganados_percent",
+      # "pases_90","x_g_90", "x_a_90", "precision_pases_percent", "pases_hacia_adelante_90",
+      # "precision_pases_hacia_adelante_percent", "pases_largos_90",
+      # "precision_pases_largos_percent", "pases_progresivos_90",
+      # "jugadas_claves_90", "duelos_90", "duelos_ganados_percent",
+      # "interceptaciones_90", "entradas_90", "posesion_conquistada_despues_de_una_interceptacion",
+      # "faltas_90"
+
+      "regates_90", "tiros_a_la_porteria_percent",
+      "goles_90","pases_90", "x_g_90", "x_a_90",
+      "asistencias_90", "remates_90",
+      "precision_pases_percent", "pases_hacia_adelante_90",
+      "precision_pases_hacia_adelante_percent", "pases_largos_90", "precision_pases_largos_percent",
+      "pases_progresivos_90", "jugadas_claves_90", "duelos_90", "duelos_ganados_percent",
       "interceptaciones_90", "entradas_90", "posesion_conquistada_despues_de_una_interceptacion",
       "faltas_90"
+
+      # "goles_90", "x_g_90", "x_a_90",
+      # "asistencias_90", "remates_90",
+      # "regates_90", "tiros_a_la_porteria_percent",
+      # "precision_pases_percent", "pases_90"
     ),
     Mediocampo_Defensivo = c(
-      "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
-      "entradas_90", "posesion_conquistada_despues_de_una_entrada", "pases_90",
-      "precision_pases_percent", "pases_hacia_atras_90", "precision_pases_hacia_atras_percent",
-      "faltas_90", "tarjetas_amarillas_90", "posesion_conquistada_despues_de_una_interceptacion",
-      "pases_laterales_90", "precision_pases_laterales_percent"
+      # "duelos_defensivos_90",
+      # "duelos_defensivos_ganados_percent",
+      # "interceptaciones_90",
+      # "entradas_90",
+      # "faltas_90", "tarjetas_amarillas_90",
+      # "posesion_conquistada_despues_de_una_entrada",
+      # "duelos_ganados_percent"
+
+      "x_g_90", "x_a_90",
+      "posesion_conquistada_despues_de_una_entrada",
+      "pases_90", "precision_pases_percent", "pases_hacia_atras_90",
+      "precision_pases_hacia_atras_percent",
+      "posesion_conquistada_despues_de_una_interceptacion", "pases_laterales_90",
+      "precision_pases_laterales_percent"
     ),
     Defensas = c(
       "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
@@ -197,6 +221,21 @@ getwd()
       "posesion_conquistada_despues_de_una_entrada", "tiros_interceptados_90",
       "pases_90", "precision_pases_percent", "pases_largos_90",
       "precision_pases_largos_percent", "faltas_90", "tarjetas_amarillas_90"
+    ),
+    Defensas_Extremos = c(
+      # "duelos_defensivos_90",
+      # "duelos_defensivos_ganados_percent",
+      # "interceptaciones_90", "entradas_90",
+      # "duelos_aereos_ganados_percent",
+      # "posesion_conquistada_despues_de_una_entrada",
+      # "faltas_90", "tarjetas_amarillas_90"
+
+      # "tiros_interceptados_90",
+      "pases_90",
+      "precision_pases_percent", "pases_largos_90",
+      "precision_pases_largos_percent",
+      "x_g_90", "x_a_90",
+      "precision_pases_laterales_percent"
     ),
     Arqueros = c(
       "goles_recibidos_90", "x_g_en_contra_90", "goles_evitados_90",
@@ -232,21 +271,64 @@ lista_dfs_posiciones_filtrados <- list()
 # df_fbref <- read_excel(paste0(.folder_data_input_r,"Betplay2021.xlsx"))
 # df_fbref <- read_excel(paste0(.folder_data_input_py,"LigaEcu/players/players_ecu.xlsx"))
 
-df_teams <- read_excel(paste0(.folder_data_input_r,"Teams.xlsx"), sheet = .country)
+# df_teams <- read_excel(paste0(.folder_data_input_r,"Teams.xlsx"), sheet = .country)
+df_teams <- read_excel(paste0(.folder_data_input_r,"Teams.xlsx"), sheet = 'Teams')
 
 df_teams <- df_teams %>%
   mutate(
-    logo_team = paste0(toupper(substring(Country,1, 3)), "_", Code)
+    logo_team = paste0(toupper(substring(Country,1, 3)), "_", Code),
+    country_teams = toupper(substr(Country, 1, 3))
   )
 
+df_teams <- df_teams %>% distinct(logo_team, .keep_all = TRUE)
+
 # Buscar todos los archivos .xlsx en la carpeta
-.files <- list.files(paste0(.folder_data_input_py,"Betplay/players/"), pattern = "\\.xlsx$", full.names = TRUE)
+# .files <- list.files(paste0(.folder_data_input_py,"Betplay/players/"), pattern = "\\.xlsx$", full.names = TRUE)
+#
+# # Leer y unir todos los Excel
+# df_fbref <- .files %>%
+#   map_dfr(~ read_excel(.x) %>% mutate(source = basename(.x))) %>%
+#   select(-c(48, 109)) %>%
+#   filter(!is.na(Equipo))
+
+
+
+# Buscar recursivamente todos los .xlsx pero SOLO dentro de "players"
+.files <- list.files(.folder_data_input_py,
+                     pattern = "\\.xlsx$",
+                     recursive = TRUE,
+                     full.names = TRUE) %>%
+  .[str_detect(., "/players/")]   # asegura que está dentro de "players"
 
 # Leer y unir todos los Excel
-df_fbref <- .files %>%
-  map_dfr(~ read_excel(.x) %>% mutate(source = basename(.x))) %>%
-  select(-c(48, 109)) %>%
-  filter(!is.na(Equipo))
+df_fbref_t <- .files %>%
+  map_dfr(~ {
+    # Separar ruta en componentes
+    parts <- str_split(.x, "/")[[1]]
+
+    # Ubicar posición de "players"
+    pos_players <- which(parts == "players")[1]
+
+    # La liga es la carpeta justo antes de "players"
+    league_name <- parts[pos_players - 1]
+
+    read_excel(.x) %>%
+      mutate(
+        source = basename(.x),    # Nombre del archivo
+        league = league_name      # Carpeta padre de players
+      )
+  })
+
+
+df_fbref <- df_fbref_t %>%
+  select(-c(25, 120,48,121 )) %>%
+  filter(!is.na(Equipo)) %>%
+  arrange(`Minutos jugados`) %>%
+  distinct(Jugador, Equipo,league, .keep_all = TRUE)
+
+# df_fbref %>% select(1,2,25,109,120,48,81,121) %>% view()
+
+df_fbref <- df_fbref[, !duplicated(names(df_fbref))]
 
 names(df_fbref) <- gsub("\\.\\.\\.[0-9]+$", "", names(df_fbref))
 
@@ -256,12 +338,35 @@ df_fbref <- df_fbref %>%
   mutate(
     posicion_especifica = gsub(",", "", posicion_especifica),             # elimina comas
     posicion_especifica = trimws(posicion_especifica),                    # elimina espacios
-    posicion_especifica = toupper(substr(posicion_especifica, 1, 3))      # asegura mayúsculas y 3 letras
+    posicion_especifica = toupper(substr(posicion_especifica, 1, 3)),      # asegura mayúsculas y 3 letras
+    country_teams = toupper(substr(league, 1, 3))
   )
 
+df_fbref <- df_fbref %>%
+  mutate(posicion_especifica = case_when(
+    jugador =='A. Luna' & equipo == 'Instituto' ~ 'RCMF',
+    TRUE ~ posicion_especifica
+  )) %>%
+  filter(!str_detect(league, "COPA"))
+
+df_fbref <-df_fbref %>%
+  filter(league =='ARGENTINA_A')
 
 df_fbref <- df_fbref %>%
-  inner_join(df_teams, by=c("equipo"="Understat"))
+  left_join(df_teams, by=c("equipo"="Teams", "country_teams"="country_teams"))
+
+# df_fbref %>%
+#   select(c(1:10),"league","country_teams","logo_team",
+#          "categoria"
+#          ) %>%
+#   filter(
+#     # equipo == 'ABB'
+#     # Jugador == 'A. Arroyo'
+#     jugador == 'A. Tiwani',
+#     # categoria == 'Defensive Midfield',
+#     minutos >300
+#   ) %>%
+#   view()
 
 # Normalizar las posiciones (quitar espacios y homologar nombres)
 df_fbref <- df_fbref %>%
@@ -294,9 +399,11 @@ df_fbref <- df_fbref %>%
     categoria == "Mediocampo" ~ "Midfield",
     categoria == "Mediocampo_Defensivo" ~ "Defensive Midfield",
     categoria == "Defensas" ~ "Defenders",
+    categoria == "Defensas_Extremos" ~ "Defenders Wingers",
     categoria == "Arqueros" ~ "Goalkeepers",
     TRUE ~ categoria
   ))
+
 
 for (rol in names(posiciones_por_categoria)) {
   posiciones <- posiciones_por_categoria[[rol]]
@@ -378,7 +485,7 @@ procesar_para_grafico <- function(df) {
 }
 
 graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equipos = c()) {
-  browser()
+  # browser()
   df_exportados <- data.frame(
     jugador = character(),
     equipo = character(),
@@ -387,12 +494,23 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
     stringsAsFactors = FALSE
   )
 
-  jugadores <- data_jugadores %>%
+  jugadores <- df_fbref %>%
     filter(equipo %in% equipos) %>%
     pull(jugador) %>%
     unique()
 
+  # jugadores = jugadores[jugadores == 'A. Tiwani']
+  jugadores <- jugadores[jugadores %in% c(
+    'M. Moreno',
+    'A. Molinas',
+    'T. Palacios',
+    'G. Maroni',
+    'A. Luna',
+    'A. Lescano'
+  )]
+
   for (jugador_actual in jugadores) {
+
     Pintar_Jugador <- data_jugadores %>%
       filter(jugador == jugador_actual, equipo %in% equipos) %>%
       mutate(value = round(value, 2),
@@ -400,12 +518,15 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
       inner_join(categoria_metricas %>% select(variable, nombre_variable = name, tipo),
                  by = "variable") %>%
       distinct() %>%
+      # mutate(nombre_variable = factor(
+      #   nombre_variable,
+      #   levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
+      # ))
       mutate(nombre_variable = factor(
         nombre_variable,
-        levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
+        levels = unique(nombre_variable)
       ))
-    # mutate(nombre_variable = factor(nombre_variable,
-    # levels = nombre_variable[order(Ranking, decreasing = TRUE)]))
+
 
     if (nrow(Pintar_Jugador) == 0) next
 
@@ -476,24 +597,33 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
     )
 
     name_player <- paste0(Pintar_Jugador$pais_de_nacimiento[1], "_", nombre_archivo, ".png")
+    name_player <- gsub(" ", "_", name_player)
 
     # Ruta imagen, render y guardado
     ruta_imagen_jugador <- file.path(paste0(.folder_img_r,"input/players/", name_player))
     ruta_imagen_default <- file.path(paste0(.folder_img_r,"input/players/01.default/", "default_sombra.png"))
     imagen_a_usar <- if (file.exists(ruta_imagen_jugador)) ruta_imagen_jugador else ruta_imagen_default
 
+    ruta_logo <- file.path(.folder_img_r, "input/teams", paste0(Pintar_Jugador$logo_team[1], ".png"))
+    logo_a_usar <- if (file.exists(ruta_logo)) ruta_logo else ruta_imagen_default
+
+
     h <- cowplot::ggdraw(p) +
       cowplot::draw_image(imagen_a_usar,
                           x = -0.10, y = 0.41, scale = 0.12) +
       # cowplot::draw_image(file.path(.folder_img_r, "ARG_GIM.png"),
-      cowplot::draw_image(file.path(paste0(.folder_img_r,"input/teams/",.country,"/", Pintar_Jugador$logo_team, ".png")),
+      # cowplot::draw_image(file.path(paste0(.folder_img_r,"input/teams/",.country,"/", Pintar_Jugador$logo_team, ".png")),
+      cowplot::draw_image(logo_a_usar,
                           x = -0.15, y = 0.41, scale = 0.12) +
       theme(plot.background = element_rect(fill = "white", color = NA))
 
     h
 
     ruta_salida <- file.path(.folder_img_r, "output/", rol, nombre_archivo2)
-    ggsave(ruta_salida, plot = h, width = 34, height = 15, units = "cm")
+    # ggsave(ruta_salida, plot = h, width = 34, height = 15, units = "cm")
+    alto_grafico <- max(15, length(unique(Pintar_Jugador$nombre_variable)) * 0.5)
+    ggsave(ruta_salida, plot = h, width = 34, height = alto_grafico, units = "cm")
+
 
     # Registrar exportado
     df_exportados <- rbind(df_exportados, data.frame(
@@ -515,21 +645,21 @@ for (rol in names(lista_dfs_posiciones_filtrados)) {
   cat("Procesando: ", rol, "\n")
   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
   df_procesado <- procesar_para_grafico(df_filtrado)
-  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "América de Cali")
-  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
+  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Mamelodi Sundowns")
+  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = rol, equipos = unique(df_filtrado$equipo))
   df_exportados_global <- bind_rows(df_exportados_global, df_exportados)
 }
 
 # Unir con df_fbref
-df_fbref <- df_fbref %>%
+df_fbref_expo <- df_fbref %>%
   left_join(df_exportados_global, by = c("jugador", "equipo", "categoria"))
 
-write.csv(df_fbref, file = file.path(paste0(.folder_data_out_r,.ligue,"_players.csv")), row.names = FALSE)
-writexl::write_xlsx(df_fbref, path = file.path(paste0(.folder_data_out_r,.ligue,"_players.xlsx")))
-writexl::write_xlsx(categoria_metricas, path = file.path(paste0(.folder_data_out_r,.ligue,"_categorias.xlsx")))
+write.csv(df_fbref_expo, file = file.path(paste0(.folder_data_out_r,.ligue,"_players.csv")), row.names = FALSE)
+writexl::write_xlsx(df_fbref_expo, path = file.path(paste0(.folder_data_out_r,.ligue,"_players.xlsx")))
+# writexl::write_xlsx(categoria_metricas, path = file.path(paste0(.folder_data_out_r,.ligue,"_categorias.xlsx")))
 
-df_fbref %>% select(c(1:10),archivo_png) %>% filter(equipo == 'Gimnasia Mendoza') %>% view()
+df_fbref_expo %>% select(c(1:10),archivo_png) %>% filter(equipo == 'Gimnasia Mendoza') %>% view()
 
 ss
 
