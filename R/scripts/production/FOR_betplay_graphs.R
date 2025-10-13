@@ -216,11 +216,17 @@ getwd()
       "precision_pases_laterales_percent"
     ),
     Defensas = c(
-      "duelos_defensivos_90","x_g_90", "x_a_90", "duelos_defensivos_ganados_percent", "interceptaciones_90",
-      "entradas_90", "duelos_aereos_en_los_90", "duelos_aereos_ganados_percent",
-      "posesion_conquistada_despues_de_una_entrada", "tiros_interceptados_90",
-      "pases_90", "precision_pases_percent", "pases_largos_90",
-      "precision_pases_largos_percent", "faltas_90", "tarjetas_amarillas_90"
+      #defensiva
+      "duelos_defensivos_90",
+      "duelos_defensivos_ganados_percent",
+      "interceptaciones_90", "entradas_90",
+      "duelos_aereos_ganados_percent",
+      "posesion_conquistada_despues_de_una_entrada",
+      "faltas_90", "tarjetas_amarillas_90",
+      #ofensiva
+      "tiros_interceptados_90", "pases_90", "precision_pases_percent", "pases_largos_90",
+      "precision_pases_largos_percent",
+      "x_g_90", "x_a_90"
     ),
     Defensas_Extremos = c(
       # "duelos_defensivos_90",
@@ -323,8 +329,9 @@ df_fbref_t <- .files %>%
 df_fbref <- df_fbref_t %>%
   select(-c(25, 120,48,121 )) %>%
   filter(!is.na(Equipo)) %>%
-  arrange(`Minutos jugados`) %>%
-  distinct(Jugador, Equipo,league, .keep_all = TRUE)
+  arrange(desc(`Minutos jugados`)) %>%
+  mutate(country_teams = toupper(substr(league, 1, 3))) %>%
+  distinct(Jugador, Equipo,country_teams, .keep_all = TRUE)
 
 # df_fbref %>% select(1,2,25,109,120,48,81,121) %>% view()
 
@@ -339,18 +346,17 @@ df_fbref <- df_fbref %>%
     posicion_especifica = gsub(",", "", posicion_especifica),             # elimina comas
     posicion_especifica = trimws(posicion_especifica),                    # elimina espacios
     posicion_especifica = toupper(substr(posicion_especifica, 1, 3)),      # asegura mayúsculas y 3 letras
-    country_teams = toupper(substr(league, 1, 3))
   )
 
 df_fbref <- df_fbref %>%
+  filter(league =='COLOMBIA_A') %>%
   mutate(posicion_especifica = case_when(
     jugador =='A. Luna' & equipo == 'Instituto' ~ 'RCMF',
     TRUE ~ posicion_especifica
-  )) %>%
-  filter(!str_detect(league, "COPA"))
+  ))
 
-df_fbref <-df_fbref %>%
-  filter(league =='ARGENTINA_A')
+# df_fbref <-df_fbref %>%
+#   filter(league =='ARGENTINA_A')
 
 df_fbref <- df_fbref %>%
   left_join(df_teams, by=c("equipo"="Teams", "country_teams"="country_teams"))
@@ -500,14 +506,14 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
     unique()
 
   # jugadores = jugadores[jugadores == 'A. Tiwani']
-  jugadores <- jugadores[jugadores %in% c(
-    'M. Moreno',
-    'A. Molinas',
-    'T. Palacios',
-    'G. Maroni',
-    'A. Luna',
-    'A. Lescano'
-  )]
+  # jugadores <- jugadores[jugadores %in% c(
+  #   'M. Moreno',
+  #   'A. Molinas',
+  #   'T. Palacios',
+  #   'G. Maroni',
+  #   'A. Luna',
+  #   'A. Lescano'
+  # )]
 
   for (jugador_actual in jugadores) {
 
@@ -518,14 +524,14 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
       inner_join(categoria_metricas %>% select(variable, nombre_variable = name, tipo),
                  by = "variable") %>%
       distinct() %>%
-      # mutate(nombre_variable = factor(
-      #   nombre_variable,
-      #   levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
-      # ))
       mutate(nombre_variable = factor(
         nombre_variable,
-        levels = unique(nombre_variable)
+        levels = unique(nombre_variable[order(Ranking, decreasing = TRUE)])
       ))
+      # mutate(nombre_variable = factor(
+      #   nombre_variable,
+      #   levels = unique(nombre_variable)
+      # ))
 
 
     if (nrow(Pintar_Jugador) == 0) next
@@ -645,8 +651,8 @@ for (rol in names(lista_dfs_posiciones_filtrados)) {
   cat("Procesando: ", rol, "\n")
   df_filtrado <- lista_dfs_posiciones_filtrados[[rol]]
   df_procesado <- procesar_para_grafico(df_filtrado)
-  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "Mamelodi Sundowns")
-  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
+  df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = "La Equidad")
+  # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = "", equipos = unique(df_filtrado$equipo))
   # df_exportados <- graficar_jugador(df_procesado, categoria_metricas, rol = rol, equipos = unique(df_filtrado$equipo))
   df_exportados_global <- bind_rows(df_exportados_global, df_exportados)
 }
