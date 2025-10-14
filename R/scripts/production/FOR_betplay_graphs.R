@@ -424,7 +424,7 @@ for (rol in names(posiciones_por_categoria)) {
 
 # FUNCIÓN DE FILTRADO
 filtrar_por_tipo <- function(df, posiciones, variables, minutos = .minutes) {
-  columnas_base <- c("jugador", "equipo","logo_team", "equipo_durante_el_periodo_seleccionado",
+  columnas_base <- c("jugador", "equipo","league","logo_team", "equipo_durante_el_periodo_seleccionado",
                      "posicion_especifica","categoria", "minutos", "edad", "pais_de_nacimiento")
   columnas_finales <- intersect(c(columnas_base, variables), colnames(df))
 
@@ -462,7 +462,7 @@ procesar_para_grafico <- function(df) {
   df[df == ""] <- 0
   df <- distinct(df)
 
-  melted <- reshape2::melt(df, id.vars = c("jugador", "equipo","logo_team", "equipo_durante_el_periodo_seleccionado",
+  melted <- reshape2::melt(df, id.vars = c("jugador", "equipo","league","logo_team", "equipo_durante_el_periodo_seleccionado",
                                            "posicion_especifica","categoria", "minutos", "edad", "pais_de_nacimiento"))
 
   melted <- melted %>%
@@ -537,7 +537,8 @@ graficar_jugador <- function(data_jugadores, categoria_metricas, rol = "", equip
     if (nrow(Pintar_Jugador) == 0) next
 
     titulo <- paste("**", jugador_actual, "** (", Pintar_Jugador$edad[1], ") - ", Pintar_Jugador$categoria[1], sep = "")
-    subtitulo <- paste(Pintar_Jugador$equipo[1], " - ", .ligue, " (", Pintar_Jugador$minutos[1], ") - min\n",
+    # subtitulo <- paste(Pintar_Jugador$equipo[1], " - ", .ligue, " (", Pintar_Jugador$minutos[1], ") - min\n",
+    subtitulo <- paste(Pintar_Jugador$equipo[1], " - ", Pintar_Jugador$league[1], " (", Pintar_Jugador$minutos[1], ") - min\n",
                        "Total players: ", n_distinct(data_jugadores$jugador))
 
     # Gráfico...
